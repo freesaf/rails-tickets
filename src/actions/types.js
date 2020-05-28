@@ -1,0 +1,28 @@
+export const SELECT_DEPARATURE_DATE = "SELECT_DEPARATURE_DATE";
+export const SELECT_RETURN_DATE = "SELECT_RETURN_DATE";
+export const SELECT_TIME_OF_DAY = "SELECT_TIME_OF_DAY";
+export const SELECT_DATE = "SELECT_DATE";
+export const GET_FORMATTED_DATE = "GET_FORMATTED_DATE";
+
+export const SELECT_ORIGIN_STATION = "SELECT_ORIGIN_STATION";
+export const SELECT_DESTINATION_STATION =
+  "SELECT_DESTINATION_STATION";
+
+export const SELECT_ADULT = "SELECT_ADULT";
+export const SELECT_CHILD = "SELECT_CHILD";
+
+export const SELECT_TICKET_TYPE = "SELECT_TICKET_TYPE";
+export const SELECT_ONE_WAY = "SELECT_ONE_WAY";
+export const SELECT_CLASS = "SELECT_CLASS";
+
+export const FIRST_CLASS = "FIRST_CLASS";
+export const STANDARD_CLASS = "STANDARD_CLASS";
+export const SINGLE_BED = "SINGLE_BED";
+
+export const ROUND_TRIP = "ROUND_TRIP";
+export const ONE_WAY = "ONE_WAY";
+
+export const NIGHT = "NIGHT";
+export const MORNING = "MORNING";
+export const AFTER_NOON = "AFTER_NOON";
+export const EVENING = "EVENING";
