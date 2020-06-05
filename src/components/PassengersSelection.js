@@ -13,13 +13,13 @@ import {
 
 export default function PassengersSelection({
   closePassengerSelection,
-  styleSetting,
   search,
   openAlert,
 }) {
   const state = useSelector((state) => {
     return state;
   });
+  const styleSetting = state.styleSetting;
   const dispatch = useDispatch();
   const ticketClass = state.tickets.ticketClass;
   const numberOfAdults = state.passengers.adults;
@@ -91,13 +91,13 @@ export default function PassengersSelection({
   return (
     <div className="w-full px-2">
       <div
-        className={`bg-${styleSetting.primary} font-bold text-white text-2xl flex w-full h-12`}>
+        className={`bg-${styleSetting.primary} font-semibold text-white text-2xl flex w-full h-12`}>
         <div className="flex items-center w-full ">
           <ion-icon
             onClick={closePassengerSelection}
             name="chevron-back"></ion-icon>
           <div className="flex justify-center w-full">
-            <h3 className={`font-bold text-xl hidden-sm`}>
+            <h3 className={`font-medium text-xl`}>
               Class and Passengers selection
             </h3>
           </div>
@@ -105,17 +105,13 @@ export default function PassengersSelection({
       </div>
       <div className="my-2">
         <h3
-          className={`fw700 font-black text-lg text-${styleSetting.primary_Light}`}>
+          className={`font-normal text-lg text-${styleSetting.primary_Light}`}>
           Class Selection
         </h3>
       </div>
 
       <div className="flex justify-between px-4 items-center flex-wrap">
         <label className="" htmlFor="first">
-          <span
-            className={`fw700 pr-1 cursor-pointer font-semibold text-sm text-${styleSetting.primary_Light}`}>
-            First class
-          </span>
           <input
             onChange={chooseClass}
             name="First class"
@@ -124,13 +120,13 @@ export default function PassengersSelection({
             value={FIRST_CLASS}
             checked={FIRST_CLASS === ticketClass}
           />
+          <span
+            className={`pl-1 cursor-pointer font-light text-base text-${styleSetting.primary_Light}`}>
+            First class
+          </span>
         </label>
 
         <label className="pl-1" htmlFor="second">
-          <span
-            className={`fw700 pr-1 cursor-pointer font-semibold text-sm text-${styleSetting.primary_Light}`}>
-            Standard class
-          </span>
           <input
             onChange={chooseClass}
             name="Standard class"
@@ -139,13 +135,13 @@ export default function PassengersSelection({
             value={STANDARD_CLASS}
             checked={STANDARD_CLASS === ticketClass}
           />
+          <span
+            className={`pl-1 cursor-pointer font-light text-base text-${styleSetting.primary_Light}`}>
+            Standard class
+          </span>
         </label>
 
         <label className="pl-1" htmlFor="bed">
-          <span
-            className={`fw700 pr-1 cursor-pointer font-semibold text-sm text-${styleSetting.primary_Light}`}>
-            Single bed
-          </span>
           <input
             onChange={chooseClass}
             name="Single bed"
@@ -154,13 +150,17 @@ export default function PassengersSelection({
             value={SINGLE_BED}
             checked={SINGLE_BED === ticketClass}
           />
+          <span
+            className={`pl-1 cursor-pointer font-light text-base text-${styleSetting.primary_Light}`}>
+            Single bed
+          </span>
         </label>
       </div>
 
       <div className="">
-        <div className="my-2">
+        <div className="my-4 mt-6">
           <h3
-            className={`fw700 font-black text-lg text-${styleSetting.primary_Light}`}>
+            className={`font-normal text-lg text-${styleSetting.primary_Light}`}>
             Passengers Selection
           </h3>
         </div>
@@ -169,8 +169,8 @@ export default function PassengersSelection({
             className="flex justify-between w-full "
             htmlFor="adult">
             <div className="flex flex-col w-3/5">
-              <span className="font-bold">Adult</span>
-              <span className="flex flex-no-wrap items-center text-xs font-medium">
+              <span className="font-light text-base">Adult</span>
+              <span className="flex flex-no-wrap items-center text-sm font-light">
                 <ion-icon
                   class="text-xl"
                   name="information-circle-sharp"></ion-icon>
@@ -210,8 +210,8 @@ export default function PassengersSelection({
             className="flex justify-between mt-4"
             htmlFor="child">
             <div className="flex flex-col w-3/5">
-              <span className="font-bold">Children</span>
-              <span className="flex flex-no-wrap items-center text-xs font-medium">
+              <span className="font-light text-base">Children</span>
+              <span className="flex flex-no-wrap items-center text-sm font-light">
                 <ion-icon
                   class="text-xl"
                   name="information-circle-sharp"></ion-icon>
@@ -255,7 +255,7 @@ export default function PassengersSelection({
             class={`text-${styleSetting.secondary} text-2xl my-2`}
             name="warning-sharp"></ion-icon>
         ) : null}
-        <p className="font-semibold fw700 text-sm">{errorMsg} </p>
+        <p className="font-medium fw700 text-sm">{errorMsg} </p>
       </div>
 
       <div className="px-2 pb-2">

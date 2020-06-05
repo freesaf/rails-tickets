@@ -20,13 +20,13 @@ import {
 export default function DatePicker({
   closeDatePicker,
   openPassengerSelection,
-  styleSetting,
   openAlert,
 }) {
   const dispatch = useDispatch();
   const state = useSelector((state) => {
     return state;
   });
+  const styleSetting = state.styleSetting;
   const ticketType = state.tickets.ticketType;
   const deparatureDate = state.time.deparatureDate;
   const returnDate = state.time.returnDate;
@@ -146,9 +146,10 @@ export default function DatePicker({
         <div className="flex items-center w-full ">
           <ion-icon
             onClick={closeDatePicker}
+            class="cursor-pointer"
             name="chevron-back"></ion-icon>
           <div className="flex justify-center w-full">
-            <h3 className={`fw700 font-bold text-lg hidden-sm`}>
+            <h3 className={`font-medium text-lg`}>
               {dateselectionTitle}
             </h3>
           </div>
@@ -202,80 +203,87 @@ export default function DatePicker({
       />
       <div className="p-2">
         <div className="flex justify-center w-full">
-          <h3 className={`fw700 font-bold text-lg hidden-sm`}>
-            Time preference
-          </h3>
+          <h3 className={`font-medium text-lg`}>Time preference</h3>
         </div>
         <div className="timeoftheday flex justify-between w-full text-sm ">
-          <label className="pl-1 w-1/4" htmlFor="night">
-            <span className="flex justify-evenly items-center font-extrabold ">
-              <span>Night</span>
-              <input
-                onChange={choosetime}
-                name="Nighttime"
-                id="night"
-                type="radio"
-                value={NIGHT}
-                checked={NIGHT === timeOftheday}
-              />
-            </span>
-            <span
-              className={`w-full fw700 pr-1 cursor-pointer font-semibold text-xs text-${styleSetting.primary_Light}`}>
-              00h00-06h00
-            </span>
-          </label>
-          <label className="pl-1 w-1/4" htmlFor="morning">
-            <span className="flex justify-evenly items-center font-extrabold ">
-              <span>Morning</span>
-              <input
-                onChange={choosetime}
-                name="MorningTime"
-                id="morning"
-                type="radio"
-                value={MORNING}
-                checked={MORNING === timeOftheday}
-              />
-            </span>
-
-            <span
-              className={`w-full fw700 pr-1 cursor-pointer font-semibold text-xs text-${styleSetting.primary_Light}`}>
-              06h00-12h00
+          <label
+            className="flex items-center pl-1 w-1/4 cursor-pointer "
+            htmlFor="night">
+            <input
+              className="mr-2"
+              onChange={choosetime}
+              name="Nighttime"
+              id="night"
+              type="radio"
+              value={NIGHT}
+              checked={NIGHT === timeOftheday}
+            />
+            <span className="flex flex-col">
+              <span className="font-medium">Night</span>
+              <span
+                className={`text-sm text-${styleSetting.primary_Light}`}>
+                00h-06h
+              </span>
             </span>
           </label>
-          <label className="pl-1 w-1/4" htmlFor="after-noon">
-            <span className="flex justify-evenly items-center font-extrabold ">
-              <span>After-noon</span>
-              <input
-                onChange={choosetime}
-                name="AfterNoon"
-                id="after-noon"
-                type="radio"
-                value={AFTER_NOON}
-                checked={AFTER_NOON === timeOftheday}
-              />
-            </span>
-
-            <span
-              className={`w-full fw700 pr-1 cursor-pointer font-semibold text-xs text-${styleSetting.primary_Light}`}>
-              12h00-18h00
+          <label
+            className="flex items-center pl-1 w-1/4 cursor-pointer "
+            htmlFor="morning">
+            <input
+              className="mr-2"
+              onChange={choosetime}
+              name="MorningTime"
+              id="morning"
+              type="radio"
+              value={MORNING}
+              checked={MORNING === timeOftheday}
+            />
+            <span className="flex flex-col">
+              <span className="font-medium">Morning</span>
+              <span
+                className={`text-sm text-${styleSetting.primary_Light}`}>
+                06h-12h
+              </span>
             </span>
           </label>
-          <label className="pl-1 w-1/4" htmlFor="evening">
-            <span className="flex justify-evenly items-center font-extrabold ">
-              <span>Evening</span>
-              <input
-                onChange={choosetime}
-                name="EveningTime"
-                id="evening"
-                type="radio"
-                value={EVENING}
-                checked={EVENING === timeOftheday}
-              />
+          <label
+            className="flex items-center pl-1 w-1/4 cursor-pointer "
+            htmlFor="after-noon">
+            <input
+              className="mr-2"
+              onChange={choosetime}
+              name="AfterNoon"
+              id="after-noon"
+              type="radio"
+              value={AFTER_NOON}
+              checked={AFTER_NOON === timeOftheday}
+            />
+            <span className="flex flex-col">
+              <span className="font-medium">Afternoon</span>
+              <span
+                className={`text-sm text-${styleSetting.primary_Light}`}>
+                12h-18h
+              </span>
             </span>
-
-            <span
-              className={`w-full fw700 pr-1 cursor-pointer font-semibold text-xs text-${styleSetting.primary_Light}`}>
-              18h00-00h00
+          </label>
+          <label
+            className="flex items-center pl-1 w-1/4 cursor-pointer "
+            htmlFor="evening">
+            <input
+              className="mr-2"
+              onChange={choosetime}
+              name="EveningTime"
+              id="evening"
+              type="radio"
+              value={EVENING}
+              checked={EVENING === timeOftheday}
+            />
+            <span className="flex flex-col">
+              <span className="font-medium">Evening</span>
+              <span
+                className={`text-sm text-${styleSetting.primary_Light}`}>
+                18h-00h
+              </span>
             </span>
           </label>
         </div>
@@ -299,7 +307,7 @@ export default function DatePicker({
               : "cursor-not-allowed"
           } bg-${
             styleSetting.secondary
-          } text-white text-xl w-full mt-2 rounded-xl h-16 flex justify-center items-center text-align-center fw700`}>
+          } text-white text-xl w-full mt-2 rounded-xl h-16 flex justify-center items-center text-align-center`}>
           {dateselectionTitle === "Date selection is completed"
             ? "Confirm Date"
             : "please complete date selection"}

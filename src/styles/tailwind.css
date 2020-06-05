@@ -2,17 +2,28 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-.fw700 {
-  font-family: MuseoSans-700, sans-serif;
+body {
+  font-size: 14px;
+  line-height: 1.42857143;
+  font-family: "Fira Sans", sans-serif;
+  margin: 0;
 }
 
-form input.lift:focus + label span,
-form input.lift:valid + label span {
+form input.lift:focus + label .fromLift,
+form input.lift:valid + label .fromLift,
+form input.tolift:focus + label .toLift,
+form input.tolift:valid + label .toLift {
   transform: translateY(-170%);
-  color: #3182ce;
-  font-size: 0.75rem;
+  color: #2073e3;
+  font-size: 14px;
 }
 
+form input.lift:focus + label + .originStation,
+form input.tolift:focus + label + .destinationStation {
+  display: flex;
+}
+
+/* hide arrows in number input */
 input.hidespinner::-webkit-outer-spin-button,
 input.hidespinner::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -26,7 +37,7 @@ input.hidespinner[type="number"] {
 .react-calendar {
   max-width: 100%;
   background: white;
-  font-family: MuseoSans-700, Arial, Helvetica, sans-serif;
+  font-family: "Fira Sans", Arial, Helvetica, sans-serif;
   line-height: 1.125em;
 }
 .react-calendar--doubleView {

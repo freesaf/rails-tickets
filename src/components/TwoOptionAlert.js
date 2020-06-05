@@ -15,14 +15,14 @@ export default function TwoOptionAlert({
     <div className="pb-4">
       <div>
         <h3
-          className={`bg-${styleSetting.secondary} h-10 text-white`}>
+          className={`bg-${styleSetting.secondary} text-center h-10 text-white font-bold`}>
           {message.title}
         </h3>
       </div>
       <div className="flex flex-col justify-center items-center">
         <div className="h-48">{message.body}</div>
       </div>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-around items-center">
         <button
           onClick={() => {
             closePopup();

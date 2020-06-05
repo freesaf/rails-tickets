@@ -29,7 +29,7 @@ const Modal = forwardRef((props, ref) => {
           <div className="fixed top-0 bottom-0 right-0 left-0">
             <div
               style={{ top: "50%", left: "50%" }}
-              className="relative bg-white min-h-1/4s h-auto w-11/12 transform -translate-x-1/2 -translate-y-1/2">
+              className={`relative bg-white min-h-1/4s h-auto w-11/12 transform -translate-x-1/2 -translate-y-1/2`}>
               <div className="flex justify-end  h-auto overflow-y-auto"></div>
               {content}
             </div>

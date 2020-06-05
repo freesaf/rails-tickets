@@ -2,18 +2,27 @@ import {
   SELECT_ADULT,
   SELECT_CHILD,
   SELECT_TICKET_TYPE,
-  SELECT_ONE_WAY,
-  NIGHT,
-  MORNING,
-  AFTER_NOON,
-  EVENING,
   SELECT_DEPARATURE_DATE,
   SELECT_RETURN_DATE,
   SELECT_TIME_OF_DAY,
   SELECT_DATE,
   SELECT_CLASS,
-  GET_FORMATTED_DATE,
+  FETCH_STATIONS,
 } from "./types";
+
+export const fetchStations = () => async (dispatch) => {
+  await fetch("https://www.oncf.ma/en/api/gares/list/")
+    .then((res) => res.json())
+    .then((stations) => {
+      dispatch({
+        type: FETCH_STATIONS,
+        payload: stations,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
 export const setTicketType = (ticketType) => {
   return {
@@ -86,19 +95,19 @@ export const getDatewithNames = (date) => {
 const getDaysName = (date) => {
   switch (date.getDay()) {
     case 0:
-      return "Monday";
-    case 1:
-      return "Tuesday";
-    case 2:
-      return "Wednesday";
-    case 3:
-      return "Thursday";
-    case 4:
-      return "Friday";
-    case 5:
-      return "Saturday";
-    case 6:
       return "Sunday";
+    case 1:
+      return "Monday";
+    case 2:
+      return "Tuesday";
+    case 3:
+      return "Wednesday";
+    case 4:
+      return "Thursday";
+    case 5:
+      return "Friday";
+    case 6:
+      return "Saturday";
     default:
       return null;
   }

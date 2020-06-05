@@ -4,7 +4,7 @@ export default () => {
     primary_Light: "gray-500",
     primary_H: "gray-900",
     secondary: "red-turkish",
-    info: "blue-600",
+    info: "blue-turkish",
     warning: "yellow-300",
   };
 };

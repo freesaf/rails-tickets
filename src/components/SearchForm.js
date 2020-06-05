@@ -3,10 +3,12 @@ import Modal from "./Modal";
 import DatePicker from "./DatePicker";
 import PassengersSelection from "./PassengersSelection";
 import { useSelector, useDispatch } from "react-redux";
+import * as cities from "../api/stations.json";
 import {
   setDeparatureDate,
   setReturnDate,
   selectDate,
+  getDatewithNames,
 } from "../actions";
 import {
   ONE_WAY,
@@ -15,11 +17,22 @@ import {
   STANDARD_CLASS,
 } from "../actions/types";
 import TwoOptionAlert from "./TwoOptionAlert";
+import { useEffect } from "react";
 
-export default function SeartchForm({ styleSetting }) {
+export default function SeartchForm() {
+  useEffect(() => {
+    // dispatch(fetchStations());
+  }, []);
+
   const state = useSelector((state) => {
     return state;
   });
+  const styleSetting = state.styleSetting;
+  const stations = cities.cities;
+  const [originStation, setoriginStation] = useState([]);
+  const [destinationStation, setdestinationStation] = useState([]);
+  const [fromListdiv, setfromListdiv] = useState("hidden");
+  const [toListdiv, settoListdiv] = useState("hidden");
   const dispatch = useDispatch();
   const ticketType = state.tickets.ticketType;
   const [fromValue, setfromValue] = useState("");
@@ -46,21 +59,62 @@ export default function SeartchForm({ styleSetting }) {
     ticketClass: ticketClass,
     passengers: passengers,
   };
-
+  const checkInputFields = () => {
+    let errors = [];
+    if (originStation.length < 1) {
+      errors.push("Deparature station");
+    }
+    if (destinationStation.length < 1) {
+      errors.push("Destination station");
+    }
+    if (!deparatureDate) {
+      errors.push("Deparature date");
+    }
+    if (ticketType === ROUND_TRIP && !returnDate) {
+      errors.push("Return date");
+    }
+    if (errors.length > 1) {
+      console.log(errors);
+      return errors;
+    } else {
+      return null;
+    }
+  };
   const submitSearch = (e) => {
     e.preventDefault();
-    if (ticketType === ROUND_TRIP && returnDate === null) {
-      alertMessage("Please select your return Date", "date");
-    } else {
+    if (checkInputFields() === null) {
       console.log(reservationInfo);
+    } else {
+      alertMessage({
+        title: "Error",
+        body: (
+          <div className="pt-4">
+            <span>Please fill all the required fields:</span>
+            {checkInputFields().map((err) => {
+              return (
+                <div
+                  className={`${styleSetting.secondary} flex items-center font-semibold`}>
+                  <ion-icon
+                    class={`text-${styleSetting.secondary}`}
+                    name="warning-sharp"></ion-icon>
+                  <span>{err}</span>
+                </div>
+              );
+            })}
+          </div>
+        ),
+        option1text: "Complete my reservation",
+      });
     }
   };
 
   const modalRef = useRef();
 
-  const swapEntries = () => {
+  const swapStations = () => {
     setfromValue(toValue);
+    setoriginStation(destinationStation);
     settoValue(fromValue);
+    setdestinationStation(originStation);
   };
 
   const closeModal = () => {
@@ -98,7 +152,6 @@ export default function SeartchForm({ styleSetting }) {
     if (content === "date") {
       modalRef.current.open(
         <DatePicker
-          styleSetting={styleSetting}
           openAlert={alertMessage}
           closeDatePicker={closeModal}
           openPassengerSelection={selectPassengers}
@@ -107,7 +160,6 @@ export default function SeartchForm({ styleSetting }) {
     } else if (content === "passengers") {
       modalRef.current.open(
         <PassengersSelection
-          styleSetting={styleSetting}
           openAlert={alertMessage}
           closePassengerSelection={closeModal}
           search={submitSearch}
@@ -116,100 +168,58 @@ export default function SeartchForm({ styleSetting }) {
     }
   };
 
-  const getMonthName = (date) => {
-    switch (date.getMonth()) {
-      case 0:
-        return "Jan";
-      case 1:
-        return "Feb";
-      case 2:
-        return "Mar";
-      case 3:
-        return "Apr";
-      case 4:
-        return "Mai";
-      case 5:
-        return "Jun";
-      case 6:
-        return "Jul";
-      case 7:
-        return "Aug";
-      case 8:
-        return "Sep";
-      case 9:
-        return "Oct";
-      case 10:
-        return "Nov";
-      case 11:
-        return "Dec";
-
-      default:
-        return null;
-    }
-  };
-
-  const getDaysName = (date) => {
-    switch (date.getDay()) {
-      case 0:
-        return "Monday";
-      case 1:
-        return "Tuesday";
-      case 2:
-        return "Wednesday";
-      case 3:
-        return "Thursday";
-      case 4:
-        return "Friday";
-      case 5:
-        return "Saturday";
-      case 6:
-        return "Sunday";
-      default:
-        return null;
-    }
-  };
-
   const showDates = (dateType, date) => {
+    const selectedDate = getDatewithNames(date);
     return (
-      <span className="flex flex-col justify-center items-center h-16 leading-4 text-sm m-0">
-        <span className="pt-1 text-white font-semibold">
+      <>
+        <span className="pt-1 leading-4 text-white text-sm">
           {dateType}
         </span>
-        <span className="text-gray-300">{getDaysName(date)}</span>
-        <span className="text-base font-semibold text-white">
-          {date.getDate()}
+        <span className="text-gray-300 text-xs">
+          {selectedDate.dayName}{" "}
         </span>
-        <span className="pb-1  text-gray-300">
-          {getMonthName(date)}
+        <span className="text-white text-xl">{date.getDate()}</span>
+        <span className="pb-1 text-gray-300 text-xs">
+          {selectedDate.monthName}
         </span>
-      </span>
+      </>
     );
   };
 
   const updateCalendarBtn = () => {
     if (deparatureDate) {
       if (ticketType === ONE_WAY) {
-        return showDates("Deparature", deparatureDate);
+        return (
+          <span className="flex flex-col justify-center items-center">
+            {showDates("Deparature", deparatureDate)}{" "}
+          </span>
+        );
       } else if (ticketType === ROUND_TRIP) {
         if (returnDate) {
           return (
             <span className="flex justify-around items-center w-full">
-              <span>{showDates("Deparature", deparatureDate)} </span>
+              <span className="flex flex-col justify-center items-center">
+                {showDates("Deparature", deparatureDate)}{" "}
+              </span>
               <span className="text-xl text-white">... </span>
-              <span>{showDates("Return", returnDate)} </span>
+              <span className="flex flex-col justify-center items-center">
+                {showDates("Return", returnDate)}{" "}
+              </span>
             </span>
           );
         } else {
           return (
-            <span className="flex justify-around items-center w-full">
-              <span>{showDates("Deparature", deparatureDate)} </span>
-              <span className="text-xl text-white">... </span>
+            <span className="flex justify-around items-center w-full h-full">
               <span className="flex flex-col justify-center items-center">
-                <span className="text-sm font-semibold text-white">
+                {showDates("Deparature", deparatureDate)}{" "}
+              </span>
+              <span className="text-xl text-white">... </span>
+              <span className="flex flex-col justify-start items-center h-full">
+                <span className="pt-1 leading-4 text-white text-sm">
                   Return
                 </span>
                 <ion-icon
-                  class="text-gray-300 text-4xl"
+                  class="text-gray-300 text-5xl"
                   name="calendar-sharp"></ion-icon>
               </span>
             </span>
@@ -218,9 +228,9 @@ export default function SeartchForm({ styleSetting }) {
       }
     } else {
       return (
-        <span className="flex justify-center items-center">
+        <span className="flex justify-center items-center md:pr-2">
           <ion-icon
-            class="text-gray-300 text-4xl"
+            class="text-gray-300 text-5xl"
             name="calendar-sharp"></ion-icon>
         </span>
       );
@@ -232,138 +242,313 @@ export default function SeartchForm({ styleSetting }) {
       case FIRST_CLASS:
         return (
           <span className="flex flex-col">
-            <span className="text-white text-base font-semibold">
+            <span className="text-white text-base font-medium">
               FIRST
             </span>
-            <span>Class</span>
+            <span className="text-white">Class</span>
           </span>
         );
       case STANDARD_CLASS:
         return (
           <span className="flex flex-col">
-            <span className="text-white text-base font-semibold">
+            <span className="text-white text-base font-medium">
               STANDARD
             </span>
-            <span>Class</span>
+            <span className="text-white">Class</span>
           </span>
         );
       default:
         return (
-          <span className="text-white text-base font-semibold">
+          <span className="text-white text-base font-medium">
             Single Bed
           </span>
         );
     }
   };
 
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
+  //check wether a station is a train or bus station
+  const getStationIcon = (station) => {
+    if (station.length > 0) {
+      if (station[0] === "bus") {
+        return (
+          <span className="flex flex-row items-center w-full pb-1 flex-no-wrap">
+            <ion-icon name="bus"></ion-icon>
+            <span className="block truncate md:w-5/6 lg:w-full">
+              {" "}
+              {capitalizeFirstLetter(station[1])}
+            </span>
+          </span>
+        );
+      } else {
+        return (
+          <span className="flex flex-row items-center w-full pb-1 flex-no-wrap">
+            <ion-icon name="train"></ion-icon>
+            <span className="block truncate md:w-5/6 lg:w-full">
+              {" "}
+              {capitalizeFirstLetter(station[1])}
+            </span>
+          </span>
+        );
+      }
+    } else {
+      return null;
+    }
+  };
   return (
-    <form onSubmit={submitSearch} className="px-4">
+    <form onSubmit={submitSearch} className="px-4 md:flex">
       <div
-        className="flex w-full h-16 border border-gray-300 rounded"
+        className={`relative flex w-full md:text-black bg-white h-22t border border-gray-300 rounded focus-within:border-${styleSetting.primary}`}
         style={{
           boxShadow: "inset 0px 3px 3px rgb(0,0,0,0.3)",
         }}>
-        <div className="px-4 pt-5">
-          <ion-icon class="text-2xl" name="train-outline"></ion-icon>
+        <div className="px-6 md:px-2 lg:px-4 xl:px-6 pt-6">
+          <ion-icon class="text-3xl" name="train-outline"></ion-icon>
         </div>
 
-        <div className="relative">
+        <div className="w-full">
           <input
             onChange={(e) => {
               setfromValue(e.target.value);
             }}
-            value={fromValue}
+            onFocus={() => {
+              setfromListdiv("flex");
+              setoriginStation([]);
+            }}
+            style={{
+              paddingLeft: "2px",
+            }}
+            value={capitalizeFirstLetter(fromValue)}
             id="fromId"
-            className="lift w-full h-full bg-transparent focus:outline-none fw700 text-2xl font-black"
+            className="lift w-full h-full block truncate md:w-5/6 lg:w-full bg-transparent focus:outline-none text-2xl font-medium"
             type="text"
             name="from"
             required
           />
+
           <label
             htmlFor="fromId"
-            className="pointer-events-none absolute w-full h-full bottom-0 left-0">
+            className="pointer-events-none left-20 md:left-12 lg:left-16 xl:left-20 absolute w-5/6 h-full bottom-0">
             <span
-              style={{ transition: "all 0.3s ease", bottom: "11px" }}
-              className={`absolute left-0  text-xl font-black fw700 text-${styleSetting.primary_Light}`}>
+              style={{
+                transition: "all 0.3s ease",
+                bottom: "24px",
+              }}
+              className={`fromLift absolute text-xl font-medium text-${styleSetting.primary_Light}`}>
               From
             </span>
+            <p
+              className={`absolute bottom-0 w-full  text-sm font-medium text-${styleSetting.primary_Light}`}>
+              {getStationIcon(originStation)}
+            </p>
           </label>
+          <div
+            style={{
+              boxShadow: "0 0 3px grey inset",
+              transition: "all .15s ease",
+              left: "-1px",
+            }}
+            className={`${fromListdiv} absolute box-content bg-white overflow-hidden overflow-y-auto border border-t-0 border-gray-300 z-20 w-full md:w-153 outline-none max-h-1/4s`}>
+            <div className="px-4 w-full">
+              <ul className="w-full">
+                {stations
+                  .filter((station) =>
+                    station.city
+                      .toLowerCase()
+                      .includes(fromValue.toLowerCase())
+                  )
+                  .map((station, i) => {
+                    if (fromValue.length === 0) {
+                      return null;
+                    } else {
+                      return (
+                        <li
+                          className="cursor-pointer hover:bg-blue-turkish z-20"
+                          onClick={(e) => {
+                            //check if the city have a train station
+                            if (station.lat < 31.6306304) {
+                              setoriginStation([
+                                "bus",
+                                station.label.toLowerCase(),
+                              ]);
+                            } else {
+                              setoriginStation([
+                                "train",
+                                station.label.toLowerCase(),
+                              ]);
+                            }
+                            setfromValue(station.city.toLowerCase());
+                            setfromListdiv("hidden");
+                          }}
+                          key={station.lat + i}>
+                          <span>{station.city}</span>
+                          <br></br>
+                          <ion-icon
+                            class="pointer-events-none"
+                            name="location-outline"></ion-icon>
+                          <span className="pointer-events-none">
+                            {station.label}
+                          </span>
+                        </li>
+                      );
+                    }
+                  })}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Switch */}
-      <div className="flex justify-center items-center -my-2">
+      <div className="flex justify-center items-center -my-2 md:-mx-2 md:my-0">
         <div
           onClick={() => {
-            swapEntries();
+            swapStations();
           }}
-          className={`relative h-8 w-6 bg-${styleSetting.primary} rounded-full z-10  cursor-pointer`}>
+          className={`relative h-8 w-8 bg-${styleSetting.primary} transform md:rotate-90 rounded-full z-20 cursor-pointer`}>
           <ion-icon
-            class="transform text-2xl font-bold text-white m-0 absolute"
-            style={{ bottom: "4px" }}
+            class="transform text-white text-2xl m-0 absolute bottom-1 left-1"
             name="swap-vertical"></ion-icon>
         </div>
       </div>
 
       {/* TO */}
       <div
-        className="flex w-full h-16 border border-gray-300 rounded"
+        className={`relative flex w-full md:text-black bg-white h-22t border border-gray-300 rounded focus-within:border-${styleSetting.primary}`}
         style={{
           boxShadow: "inset 0px 3px 3px rgb(0,0,0,0.3)",
         }}>
-        <div className="px-4 pt-5">
-          <ion-icon class="text-2xl" name="train-sharp"></ion-icon>
+        <div className="px-6 md:px-2 lg:px-4 xl:px-6 pt-6">
+          <ion-icon class="text-3xl" name="train-sharp"></ion-icon>
         </div>
-        <div className="relative">
+        <div className="w-full">
           <input
             onChange={(e) => {
               settoValue(e.target.value);
             }}
-            value={toValue}
+            onFocus={() => {
+              settoListdiv("flex");
+              setdestinationStation([]);
+            }}
+            value={capitalizeFirstLetter(toValue)}
             id="toId"
-            className="lift w-full h-full bg-transparent focus:outline-none fw700 text-2xl font-black"
+            style={{
+              paddingLeft: "2px",
+            }}
+            className="tolift w-full h-full block truncate md:w-5/6 lg:w-full bg-transparent focus:outline-none text-2xl font-medium"
             type="text"
             name="To"
             required
           />
+
           <label
             htmlFor="toId"
-            className="pointer-events-none absolute w-full h-full bottom-0 left-0">
+            className="pointer-events-none left-20 md:left-12 lg:left-16 xl:left-20  absolute w-5/6 h-full bottom-0">
             <span
-              style={{ transition: "all 0.3s ease", bottom: "11px" }}
-              className={`absolute left-0 text-xl font-black fw700 text-${styleSetting.primary_Light}`}>
+              style={{
+                transition: "all 0.3s ease",
+                bottom: "24px",
+              }}
+              className={`toLift absolute text-xl font-medium text-${styleSetting.primary_Light} `}>
               To
             </span>
+            <p
+              className={`absolute bottom-0 w-full text-sm font-medium text-${styleSetting.primary_Light}`}>
+              {getStationIcon(destinationStation)}
+            </p>
           </label>
+          <div
+            style={{
+              boxShadow: "0 0 3px grey inset",
+              transition: "all .15s ease",
+              left: "-1px",
+            }}
+            className={`${toListdiv} absolute box-content bg-white overflow-hidden border border-t-0 border-gray-300 z-10 w-full md:w-153 max-h-1/4s`}>
+            <div className="px-4 w-full overflow-y-auto">
+              <ul className="w-full">
+                {stations
+                  .filter((station) =>
+                    station.city
+                      .toLowerCase()
+                      .includes(toValue.toLowerCase())
+                  )
+                  .map((station, i) => {
+                    if (toValue.length === 0) {
+                      return null;
+                    } else {
+                      return (
+                        <li
+                          className="cursor-pointer hover:bg-blue-turkish z-20"
+                          onClick={() => {
+                            //check if the city have a train station
+                            if (station.lat < 31.6306304) {
+                              setdestinationStation([
+                                "bus",
+                                station.label.toLowerCase(),
+                              ]);
+                            } else {
+                              setdestinationStation([
+                                "train",
+                                station.label.toLowerCase(),
+                              ]);
+                            }
+                            settoValue(station.city.toLowerCase());
+                            settoListdiv("hidden");
+                          }}
+                          key={station.lat + i}>
+                          <span>{station.city}</span>
+                          <br></br>
+                          <ion-icon
+                            class="pointer-events-none"
+                            name="location-outline"></ion-icon>
+                          <span className="pointer-events-none">
+                            {station.label}
+                          </span>
+                        </li>
+                      );
+                    }
+                  })}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="flex bg-white mt-4 w-full">
+
+      {/* Calendar and Passenger */}
+      <div className="flex mt-4 w-full md:mt-0 md:ml-4 ">
         <div
           onClick={() => {
             openModal("date");
           }}
-          className={`bg-${styleSetting.primary} w-1/2 h-16 flex justify-center items-center cursor-pointer mr-1 `}>
+          className={`bg-${styleSetting.primary} z-0 min-w-32 w-1/2 h-22t flex justify-center items-center cursor-pointer mr-2 `}>
+          <span
+            className={`hidden text-base font-normal md:inline ${
+              deparatureDate ? "" : "px-2"
+            } `}>
+            {deparatureDate ? "" : " Dates"}
+          </span>
           {updateCalendarBtn()}
         </div>
         <div
           onClick={() => {
             openModal("passengers");
           }}
-          className={`relative bg-${styleSetting.primary} w-1/2 h-16 flex justify-center items-center cursor-pointer ml-1`}>
+          className={`relative bg-${styleSetting.primary} min-w-32 w-1/2 h-22t p-2 flex justify-center items-center cursor-pointer ml-2`}>
           <span className="flex justify-around w-full items-center">
-            <span className="flex flex-col text-sm leading-5 ">
+            <span className="flex flex-col text-sm md:text-xs leading-5 ">
               <span className="text-gray-400">Ticket Class</span>
-              <span className="text-gray-400">
-                {updateTicketClassBtn(ticketClass)}{" "}
-              </span>
+              <>{updateTicketClassBtn(ticketClass)}</>
             </span>
-            <span className="pr-4">
+            <span className="flex flex-no-wrap items-center">
               {[...Array(totalPassengers)].map((passenger, i) => {
                 if (i === 3) {
                   return (
                     <span
                       key={i}
-                      className="font-black fw700 text-base text-gray-400">
+                      className="font-black ml-px md:text-sm text-gray-400">
                       +
                     </span>
                   );
@@ -373,14 +558,14 @@ export default function SeartchForm({ styleSetting }) {
                       key={i}
                       class={`${
                         i === 2 ? "text-gray-400 " : "text-gray-300"
-                      } text-2xl -m-2`}
+                      } text-2xl md:text-1xl -m-2`}
                       name="man-sharp"></ion-icon>
                   );
                 } else {
                   return null;
                 }
               })}
-              <span className="absolute top-0 right-0 text-base font-black text-white w-5">
+              <span className="absolute top-0 right-0 text-base font-bold text-white w-5">
                 {totalPassengers}
               </span>
             </span>
@@ -389,9 +574,14 @@ export default function SeartchForm({ styleSetting }) {
         <Modal ref={modalRef} />
       </div>
       <input
-        className={`bg-${styleSetting.secondary} text-white text-4xl w-full h-16 my-4`}
+        className={`bg-${styleSetting.secondary} cursor-pointer md:hidden text-white text-4xl w-full h-22t my-4 md:ml-4 md:my-0`}
         type="submit"
         value="Search"
+      />
+      <input
+        className={`bg-${styleSetting.secondary} cursor-pointer hidden md:inline text-white text-4xl w-40 h-22t my-4 md:ml-4 md:my-0`}
+        type="submit"
+        value=">"
       />
     </form>
   );
