@@ -1,12 +1,12 @@
 import {
-  SELECT_DEPARATURE_DATE,
+  SELECT_DEPARTURE_DATE,
   SELECT_RETURN_DATE,
   SELECT_TIME_OF_DAY,
   SELECT_DATE,
   NIGHT,
 } from "../actions/types";
 const INITAIL_STATE = {
-  deparatureDate: null,
+  departureDate: null,
   returnDate: null,
   selectedDate: null,
   timeOftheday: NIGHT,
@@ -14,8 +14,8 @@ const INITAIL_STATE = {
 
 export default (state = INITAIL_STATE, action) => {
   switch (action.type) {
-    case SELECT_DEPARATURE_DATE:
-      return { ...state, deparatureDate: action.payload };
+    case SELECT_DEPARTURE_DATE:
+      return { ...state, departureDate: action.payload };
     case SELECT_RETURN_DATE:
       return { ...state, returnDate: action.payload };
     case SELECT_TIME_OF_DAY:

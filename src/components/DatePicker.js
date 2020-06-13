@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  setDeparatureDate,
+  setDepartureDate,
   setReturnDate,
   selectDate,
   selectTimeofTheDay,
@@ -28,27 +28,28 @@ export default function DatePicker({
   });
   const styleSetting = state.styleSetting;
   const ticketType = state.tickets.ticketType;
-  const deparatureDate = state.time.deparatureDate;
+  // const ticketClass = state.tickets.ticketClass;
+  const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
   const selectedDate = state.time.selectedDate;
   const timeOftheday = state.time.timeOftheday;
   const [alertColor, setalertColor] = useState("");
 
   useEffect(() => {
-    if (deparatureDate && ticketType === ROUND_TRIP) {
+    if (departureDate && ticketType === ROUND_TRIP) {
       if (returnDate) {
         setdateselectionTitle("Date selection is completed");
         setalertColor("");
       } else {
         setdateselectionTitle("Choose your return date");
       }
-    } else if (deparatureDate && ticketType === ONE_WAY) {
+    } else if (departureDate && ticketType === ONE_WAY) {
       setdateselectionTitle("Date selection is completed");
       setalertColor("");
     }
-  }, [ticketType, deparatureDate, returnDate]);
+  }, [ticketType, departureDate, returnDate]);
   const [dateselectionTitle, setdateselectionTitle] = useState(
-    "Choose your deparature date"
+    "Choose your departure date"
   );
 
   const chooseDate = (date) => {
@@ -74,15 +75,15 @@ export default function DatePicker({
       dateselectionTitle === "Date selection is completed"
     ) {
       if (ticketType === ROUND_TRIP) {
-        const selectedDeparature = getDatewithNames(deparatureDate);
+        const selectedDeparture = getDatewithNames(departureDate);
         const selectedReturn = getDatewithNames(returnDate);
         openAlert(
           {
             title: "Confirmation",
             body: (
               <div className="px-4">
-                <span>Deparature date:</span>
-                <p>{`${selectedDeparature.dayName} ${selectedDeparature.currentDate} ${selectedDeparature.monthName} ${selectedDeparature.year}`}</p>
+                <span>Departure date:</span>
+                <p>{`${selectedDeparture.dayName} ${selectedDeparture.currentDate} ${selectedDeparture.monthName} ${selectedDeparture.year}`}</p>
                 <span>Return Date:</span>
                 <p>{`${selectedReturn.dayName} ${selectedReturn.currentDate} ${selectedReturn.monthName} ${selectedReturn.year}`}</p>
                 <span>
@@ -98,14 +99,14 @@ export default function DatePicker({
           "date"
         );
       } else {
-        const selectedDeparature = getDatewithNames(deparatureDate);
+        const selectedDeparture = getDatewithNames(departureDate);
         openAlert(
           {
             title: "Confirmation",
             body: (
               <div className="px-4">
-                <span>Deparature date:</span>
-                <p>{`${selectedDeparature.dayName} ${selectedDeparature.currentDate} ${selectedDeparature.monthName} ${selectedDeparature.year}`}</p>
+                <span>Departure date:</span>
+                <p>{`${selectedDeparture.dayName} ${selectedDeparture.currentDate} ${selectedDeparture.monthName} ${selectedDeparture.year}`}</p>
                 <span>
                   Would you like to complete your reservation or
                   choose another date ?
@@ -120,21 +121,21 @@ export default function DatePicker({
         );
       }
     } else {
-      // if there is no deparature date choose one
-      if (!deparatureDate) {
-        dispatch(setDeparatureDate(date));
+      // if there is no departure date choose one
+      if (!departureDate) {
+        dispatch(setDepartureDate(date));
       }
-      // if the deparature date exist but there's no return date (if the use want a roundtrip ticket)
+      // if the departure date exist but there's no return date (if the user want a roundtrip ticket)
       else if (!returnDate && ticketType === ROUND_TRIP) {
-        // switch the dates if the returnDate is less than the deparatureDate
-        if (deparatureDate > date) {
-          dispatch(setReturnDate(deparatureDate));
-          dispatch(setDeparatureDate(date));
+        // switch the dates if the returnDate is less than the departureDate
+        if (departureDate > date) {
+          dispatch(setReturnDate(departureDate));
+          dispatch(setDepartureDate(date));
         } else {
           dispatch(setReturnDate(date));
         }
       } else {
-        dispatch(setDeparatureDate(date));
+        dispatch(setDepartureDate(date));
       }
     }
   };
@@ -171,9 +172,9 @@ export default function DatePicker({
         //Add text inside selected dates
 
         tileContent={({ date }) => {
-          if (deparatureDate) {
+          if (departureDate) {
             if (
-              date.toDateString() === deparatureDate.toDateString()
+              date.toDateString() === departureDate.toDateString()
             ) {
               return "Depart";
             }
@@ -187,9 +188,9 @@ export default function DatePicker({
         // center the the text inside the selected dates
 
         tileClassName={({ date }) => {
-          if (deparatureDate) {
+          if (departureDate) {
             if (
-              date.toDateString() === deparatureDate.toDateString()
+              date.toDateString() === departureDate.toDateString()
             ) {
               return "flex flex-col justify-center items-center text-xs react-calendar__tile--rangeStart";
             }
@@ -294,8 +295,13 @@ export default function DatePicker({
             if (
               dateselectionTitle === "Date selection is completed"
             ) {
+              // if (ticketClass) {
+              //   console.log(ticketType);
+              //   closeDatePicker();
+              // } else {
               closeDatePicker();
               openPassengerSelection();
+              // }
             } else {
               setdateselectionTitle("Please complete Date selection");
               setalertColor("bg-red-700 text-white");

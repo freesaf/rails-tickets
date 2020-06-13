@@ -28,6 +28,7 @@ module.exports = {
         700: "#4a5568",
         800: "#2d3748",
         900: "#1a202c",
+        lightBg: "#E2E2E2",
       },
       red: {
         100: "#fff5f5",

@@ -2,13 +2,25 @@ import {
   SELECT_ADULT,
   SELECT_CHILD,
   SELECT_TICKET_TYPE,
-  SELECT_DEPARATURE_DATE,
+  SELECT_DEPARTURE_DATE,
   SELECT_RETURN_DATE,
   SELECT_TIME_OF_DAY,
   SELECT_DATE,
   SELECT_CLASS,
   FETCH_STATIONS,
+  SELECT_TRAIN,
+  SUBMIT_PASSENGER_INFO,
+  ADD_EXTRA,
+  PROCED_TO_PAYMENTS,
+  SELECT_DIRECT_TRIP,
 } from "./types";
+
+export const setDirectTrip = () => {
+  return {
+    type: SELECT_DIRECT_TRIP,
+    payload: true,
+  };
+};
 
 export const fetchStations = () => async (dispatch) => {
   await fetch("https://www.oncf.ma/en/api/gares/list/")
@@ -31,9 +43,9 @@ export const setTicketType = (ticketType) => {
   };
 };
 
-export const setDeparatureDate = (date) => {
+export const setDepartureDate = (date) => {
   return {
-    type: SELECT_DEPARATURE_DATE,
+    type: SELECT_DEPARTURE_DATE,
     payload: date,
   };
 };

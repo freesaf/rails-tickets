@@ -5,7 +5,7 @@ import PassengersSelection from "./PassengersSelection";
 import { useSelector, useDispatch } from "react-redux";
 import * as cities from "../api/stations.json";
 import {
-  setDeparatureDate,
+  setDepartureDate,
   setReturnDate,
   selectDate,
   getDatewithNames,
@@ -15,18 +15,16 @@ import {
   ROUND_TRIP,
   FIRST_CLASS,
   STANDARD_CLASS,
+  SINGLE_BED,
 } from "../actions/types";
 import TwoOptionAlert from "./TwoOptionAlert";
-import { useEffect } from "react";
+import { useNavigate } from "@reach/router";
 
 export default function SeartchForm() {
-  useEffect(() => {
-    // dispatch(fetchStations());
-  }, []);
-
   const state = useSelector((state) => {
     return state;
   });
+  const navigate = useNavigate();
   const styleSetting = state.styleSetting;
   const stations = cities.cities;
   const [originStation, setoriginStation] = useState([]);
@@ -37,7 +35,7 @@ export default function SeartchForm() {
   const ticketType = state.tickets.ticketType;
   const [fromValue, setfromValue] = useState("");
   const [toValue, settoValue] = useState("");
-  const deparatureDate = state.time.deparatureDate;
+  const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
   const ticketClass = state.tickets.ticketClass;
   const numberOfAdults = state.passengers.adults;
@@ -52,7 +50,7 @@ export default function SeartchForm() {
   const reservationInfo = {
     from: fromValue,
     to: toValue,
-    depart: deparatureDate,
+    depart: departureDate,
     return: returnDate,
     ticketType: ticketType,
     timeOftheday: timeOftheday,
@@ -62,19 +60,21 @@ export default function SeartchForm() {
   const checkInputFields = () => {
     let errors = [];
     if (originStation.length < 1) {
-      errors.push("Deparature station");
+      errors.push("Departure station");
     }
     if (destinationStation.length < 1) {
       errors.push("Destination station");
     }
-    if (!deparatureDate) {
-      errors.push("Deparature date");
+    if (!departureDate) {
+      errors.push("Departure date");
     }
     if (ticketType === ROUND_TRIP && !returnDate) {
       errors.push("Return date");
     }
-    if (errors.length > 1) {
-      console.log(errors);
+    // if (!ticketClass) {
+    //   errors.push("Ticket class");
+    // }
+    if (errors.length >= 1) {
       return errors;
     } else {
       return null;
@@ -84,29 +84,46 @@ export default function SeartchForm() {
     e.preventDefault();
     if (checkInputFields() === null) {
       console.log(reservationInfo);
+      navigate("/reservation");
     } else {
-      alertMessage({
-        title: "Error",
-        body: (
-          <div className="pt-4">
-            <span>Please fill all the required fields:</span>
-            {checkInputFields().map((err) => {
-              return (
-                <div
-                  className={`${styleSetting.secondary} flex items-center font-semibold`}>
-                  <ion-icon
-                    class={`text-${styleSetting.secondary}`}
-                    name="warning-sharp"></ion-icon>
-                  <span>{err}</span>
-                </div>
-              );
-            })}
-          </div>
-        ),
-        option1text: "Complete my reservation",
-      });
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4">
+              <span>Please fill all the required fields:</span>
+              {checkInputFields().map((err) => {
+                return (
+                  <div
+                    key={err}
+                    className={`${styleSetting.secondary} flex items-center font-semibold`}>
+                    <ion-icon
+                      class={`text-${styleSetting.secondary}`}
+                      name="warning-sharp"></ion-icon>
+                    <span>{err}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ),
+          option1text: "Complete my reservation",
+        },
+        (() => {
+          let err = checkInputFields();
+          if (
+            err.includes("Departure date") ||
+            err.includes("Return date")
+          ) {
+            return "date";
+          }
+          // if (err.includes("Ticket class")) {
+          //   return "passengers";
+          // }
+        })()
+      );
     }
   };
+  // FIX TICKET CLASS
 
   const modalRef = useRef();
 
@@ -120,9 +137,6 @@ export default function SeartchForm() {
   const closeModal = () => {
     modalRef.current.close();
   };
-  const selectPassengers = () => {
-    openModal("passengers");
-  };
 
   const alertMessage = (message, continueReservation, resetDates) => {
     modalRef.current.open(
@@ -133,15 +147,23 @@ export default function SeartchForm() {
         onClickOptions={{
           //Accept
           option1Click: () => {
-            openModal(continueReservation);
+            //open passenger selection modal
+            // openModal(continueReservation);
+            if (continueReservation === "passengers") {
+              document.querySelector(".passengers").click();
+            } else if (continueReservation === "date") {
+              document.querySelector(".date").click();
+            }
           },
           //Decline
           option2Click: () => {
             // reset the dates if the user want to choose another date
-            dispatch(setDeparatureDate(null));
+            dispatch(setDepartureDate(null));
             dispatch(setReturnDate(null));
             dispatch(selectDate(null));
-            openModal(resetDates);
+            // open date selection modal
+            // openModal(resetDates);
+            document.querySelector(".date").click();
           },
         }}
       />
@@ -154,7 +176,9 @@ export default function SeartchForm() {
         <DatePicker
           openAlert={alertMessage}
           closeDatePicker={closeModal}
-          openPassengerSelection={selectPassengers}
+          openPassengerSelection={() => {
+            document.querySelector(".passengers").click();
+          }}
         />
       );
     } else if (content === "passengers") {
@@ -187,11 +211,11 @@ export default function SeartchForm() {
   };
 
   const updateCalendarBtn = () => {
-    if (deparatureDate) {
+    if (departureDate) {
       if (ticketType === ONE_WAY) {
         return (
           <span className="flex flex-col justify-center items-center">
-            {showDates("Deparature", deparatureDate)}{" "}
+            {showDates("Departure", departureDate)}{" "}
           </span>
         );
       } else if (ticketType === ROUND_TRIP) {
@@ -199,7 +223,7 @@ export default function SeartchForm() {
           return (
             <span className="flex justify-around items-center w-full">
               <span className="flex flex-col justify-center items-center">
-                {showDates("Deparature", deparatureDate)}{" "}
+                {showDates("Departure", departureDate)}{" "}
               </span>
               <span className="text-xl text-white">... </span>
               <span className="flex flex-col justify-center items-center">
@@ -211,7 +235,7 @@ export default function SeartchForm() {
           return (
             <span className="flex justify-around items-center w-full h-full">
               <span className="flex flex-col justify-center items-center">
-                {showDates("Deparature", deparatureDate)}{" "}
+                {showDates("Departure", departureDate)}{" "}
               </span>
               <span className="text-xl text-white">... </span>
               <span className="flex flex-col justify-start items-center h-full">
@@ -257,11 +281,15 @@ export default function SeartchForm() {
             <span className="text-white">Class</span>
           </span>
         );
-      default:
+      case SINGLE_BED:
         return (
           <span className="text-white text-base font-medium">
             Single Bed
           </span>
+        );
+      default:
+        return (
+          <span className="text-white text-base font-medium">--</span>
         );
     }
   };
@@ -355,6 +383,10 @@ export default function SeartchForm() {
             <div className="px-4 w-full">
               <ul className="w-full">
                 {stations
+                  .filter(
+                    (s) =>
+                      s.label.toLowerCase() !== destinationStation[1]
+                  )
                   .filter((station) =>
                     station.city
                       .toLowerCase()
@@ -408,10 +440,10 @@ export default function SeartchForm() {
           onClick={() => {
             swapStations();
           }}
-          className={`relative h-8 w-8 bg-${styleSetting.primary} transform md:rotate-90 rounded-full z-20 cursor-pointer`}>
+          className={`relative h-8 w-8 bg-${styleSetting.primary} transform rotate-90 md:rotate-0 rounded-full z-20 cursor-pointer`}>
           <ion-icon
             class="transform text-white text-2xl m-0 absolute bottom-1 left-1"
-            name="swap-vertical"></ion-icon>
+            name="repeat"></ion-icon>
         </div>
       </div>
 
@@ -470,6 +502,9 @@ export default function SeartchForm() {
             <div className="px-4 w-full overflow-y-auto">
               <ul className="w-full">
                 {stations
+                  .filter(
+                    (s) => s.label.toLowerCase() !== originStation[1]
+                  )
                   .filter((station) =>
                     station.city
                       .toLowerCase()
@@ -523,12 +558,12 @@ export default function SeartchForm() {
           onClick={() => {
             openModal("date");
           }}
-          className={`bg-${styleSetting.primary} z-0 min-w-32 w-1/2 h-22t flex justify-center items-center cursor-pointer mr-2 `}>
+          className={`date bg-${styleSetting.primary} z-0 min-w-32 w-1/2 h-22t flex justify-center items-center cursor-pointer mr-2 `}>
           <span
             className={`hidden text-base font-normal md:inline ${
-              deparatureDate ? "" : "px-2"
+              departureDate ? "" : "px-2"
             } `}>
-            {deparatureDate ? "" : " Dates"}
+            {departureDate ? "" : " Dates"}
           </span>
           {updateCalendarBtn()}
         </div>
@@ -536,7 +571,7 @@ export default function SeartchForm() {
           onClick={() => {
             openModal("passengers");
           }}
-          className={`relative bg-${styleSetting.primary} min-w-32 w-1/2 h-22t p-2 flex justify-center items-center cursor-pointer ml-2`}>
+          className={`passengers relative bg-${styleSetting.primary} min-w-32 w-1/2 h-22t p-2 flex justify-center items-center cursor-pointer ml-2`}>
           <span className="flex justify-around w-full items-center">
             <span className="flex flex-col text-sm md:text-xs leading-5 ">
               <span className="text-gray-400">Ticket Class</span>

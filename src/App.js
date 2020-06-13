@@ -2,7 +2,8 @@ import React from "react";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import Home from "./components/Pages/Home";
-import { Router } from "@reach/router";
+import ReservationBar from "./components/Pages/ReservationBar";
+import { Router, Match } from "@reach/router";
 
 function App() {
   const styleSetting = {
@@ -29,9 +30,16 @@ function App() {
 
   return (
     <div>
-      <Header styleSetting={styleSetting} navlinks={navlinks} />
+      <Match path="/reservation">
+        {(props) =>
+          props.match ? null : (
+            <Header styleSetting={styleSetting} navlinks={navlinks} />
+          )
+        }
+      </Match>
       <Router>
         <Home path="/" styleSetting={styleSetting} />
+        <ReservationBar path="/reservation" />
         <Modal path="/modal" />
       </Router>
     </div>

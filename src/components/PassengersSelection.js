@@ -261,16 +261,10 @@ export default function PassengersSelection({
       <div className="px-2 pb-2">
         <div
           onClick={(e) => {
-            if (!selectedDate) {
-              openAlert(
-                "Please complete date selection first",
-                "date"
-              );
-            } else {
-              search(e);
-            }
+            closePassengerSelection();
+            search(e);
           }}
-          className={`bg-${styleSetting.secondary} text-white text-xl w-full mt-2 rounded-xl h-16 flex justify-center items-center text-align-center fw700`}>
+          className={`bg-${styleSetting.secondary} text-white text-xl w-full mt-2 rounded-xl h-16 flex justify-center items-center text-align-center cursor-pointer`}>
           Search
         </div>
       </div>

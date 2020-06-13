@@ -23,6 +23,8 @@ export default function TwoOptionAlert({
         <div className="h-48">{message.body}</div>
       </div>
       <div className="flex justify-around items-center">
+        {/* Accept
+      open passenger selection modal */}
         <button
           onClick={() => {
             closePopup();
@@ -31,6 +33,9 @@ export default function TwoOptionAlert({
           className={`bg-${styleSetting.primary} px-2 text-white font-black`}>
           {message.option1text}
         </button>
+
+        {/*Decline
+        open dates selection modal */}
         <button
           onClick={() => {
             closePopup();

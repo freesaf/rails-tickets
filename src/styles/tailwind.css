@@ -8,6 +8,9 @@ body {
   font-family: "Fira Sans", sans-serif;
   margin: 0;
 }
+.top-1 {
+  top: 1rem;
+}
 
 form input.lift:focus + label .fromLift,
 form input.lift:valid + label .fromLift,
