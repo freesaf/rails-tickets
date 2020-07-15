@@ -1,29 +1,42 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "@reach/router";
+import { useSelector, useDispatch } from "react-redux";
+import moment from "moment";
+
 import Modal from "./Modal";
 import DatePicker from "./DatePicker";
 import PassengersSelection from "./PassengersSelection";
-import { useSelector, useDispatch } from "react-redux";
 import * as cities from "../api/stations.json";
+import TwoOptionAlert from "./TwoOptionAlert";
+import Loader from "../components/Loader";
 import {
   setDepartureDate,
   setReturnDate,
   selectDate,
   getDatewithNames,
+  setOriginCity,
+  setDestinationCity,
+  fetchTrains,
+  selectTicketClass,
 } from "../actions";
 import {
-  ONE_WAY,
-  ROUND_TRIP,
   FIRST_CLASS,
   STANDARD_CLASS,
   SINGLE_BED,
 } from "../actions/types";
-import TwoOptionAlert from "./TwoOptionAlert";
-import { useNavigate } from "@reach/router";
+import { useEffect } from "react";
 
 export default function SeartchForm() {
   const state = useSelector((state) => {
     return state;
   });
+  // const isLoading = state.loader;
+
+  // useEffect(() => {
+  //   if (isLoading) {
+  //     modalRef.current.open(<Loader />);
+  //   }
+  // }, [isLoading]);
   const navigate = useNavigate();
   const styleSetting = state.styleSetting;
   const stations = cities.cities;
@@ -32,31 +45,24 @@ export default function SeartchForm() {
   const [fromListdiv, setfromListdiv] = useState("hidden");
   const [toListdiv, settoListdiv] = useState("hidden");
   const dispatch = useDispatch();
-  const ticketType = state.tickets.ticketType;
   const [fromValue, setfromValue] = useState("");
   const [toValue, settoValue] = useState("");
   const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
   const ticketClass = state.tickets.ticketClass;
+  const roundtrip = state.tickets.roundtrip;
   const numberOfAdults = state.passengers.adults;
   const numberOfChildren = state.passengers.children;
   const totalPassengers = numberOfAdults + numberOfChildren;
   const timeOftheday = state.time.timeOftheday;
-  const passengers = {
-    adults: state.passengers.adults,
-    children: state.passengers.children,
-  };
+  const [originID, setorginID] = useState(null);
+  const [destinationID, setdestinationID] = useState(null);
+  const isLoading = state.loader;
+  // const passengers = {
+  //   adults: state.passengers.adults,
+  //   children: state.passengers.children,
+  // };
 
-  const reservationInfo = {
-    from: fromValue,
-    to: toValue,
-    depart: departureDate,
-    return: returnDate,
-    ticketType: ticketType,
-    timeOftheday: timeOftheday,
-    ticketClass: ticketClass,
-    passengers: passengers,
-  };
   const checkInputFields = () => {
     let errors = [];
     if (originStation.length < 1) {
@@ -68,23 +74,74 @@ export default function SeartchForm() {
     if (!departureDate) {
       errors.push("Departure date");
     }
-    if (ticketType === ROUND_TRIP && !returnDate) {
+    if (roundtrip && !returnDate) {
       errors.push("Return date");
     }
-    // if (!ticketClass) {
-    //   errors.push("Ticket class");
-    // }
     if (errors.length >= 1) {
       return errors;
     } else {
       return null;
     }
   };
+  const apiResponse = state.trainSearch.trainsTimes;
   const submitSearch = (e) => {
     e.preventDefault();
     if (checkInputFields() === null) {
-      console.log(reservationInfo);
-      navigate("/reservation");
+      const reservationData = {
+        origin: originID,
+        destination: destinationID,
+        originDate: moment(departureDate).format(),
+        intervalTime: "",
+        adulte: state.passengers.adults,
+        kids: state.passengers.children,
+        comfort: ticketClass,
+        "intervalTime-originDate": {
+          end: "12:00",
+          start: "06:01",
+          title: "Matinée",
+          value: 1,
+          disabled: false,
+        },
+        roundtrip: roundtrip,
+        "intervalTime-destinationDate": {
+          end: "12:00",
+          start: "06:01",
+          title: "Matinée",
+          value: 1,
+          disabled: false,
+        },
+        destinationDate: roundtrip ? moment(returnDate).format() : "",
+        _csrf: null,
+      };
+      // remove these
+      // dispatch(setOriginCity(fromValue));
+      // dispatch(setDestinationCity(toValue));
+      console.log(reservationData);
+      console.log(numberOfChildren);
+      dispatch(fetchTrains(reservationData));
+      setTimeout(() => {
+        while (isLoading) {
+          return <Loader />;
+        }
+        if (apiResponse.status === "error") {
+          alertMessage(
+            {
+              title: "Error",
+              body: (
+                <div className="pt-4">
+                  <span>{apiResponse.message} </span>
+                </div>
+              ),
+              option1text: "Ok",
+            },
+            "",
+            "",
+            "w-1/2"
+          );
+        } else {
+          navigate("/reservation");
+        }
+      }, 200);
     } else {
       alertMessage(
         {
@@ -96,7 +153,7 @@ export default function SeartchForm() {
                 return (
                   <div
                     key={err}
-                    className={`${styleSetting.secondary} flex items-center font-semibold`}>
+                    className={`${styleSetting.secondary} flex items-center font-semibold pl-8`}>
                     <ion-icon
                       class={`text-${styleSetting.secondary}`}
                       name="warning-sharp"></ion-icon>
@@ -116,14 +173,10 @@ export default function SeartchForm() {
           ) {
             return "date";
           }
-          // if (err.includes("Ticket class")) {
-          //   return "passengers";
-          // }
         })()
       );
     }
   };
-  // FIX TICKET CLASS
 
   const modalRef = useRef();
 
@@ -138,7 +191,7 @@ export default function SeartchForm() {
     modalRef.current.close();
   };
 
-  const alertMessage = (message, continueReservation, resetDates) => {
+  const alertMessage = (message, goto, resetDates, classes) => {
     modalRef.current.open(
       <TwoOptionAlert
         message={message}
@@ -147,11 +200,11 @@ export default function SeartchForm() {
         onClickOptions={{
           //Accept
           option1Click: () => {
+            //close the current Modal
             //open passenger selection modal
-            // openModal(continueReservation);
-            if (continueReservation === "passengers") {
+            if (goto === "passengers") {
               document.querySelector(".passengers").click();
-            } else if (continueReservation === "date") {
+            } else if (goto === "date") {
               document.querySelector(".date").click();
             }
           },
@@ -161,13 +214,17 @@ export default function SeartchForm() {
             dispatch(setDepartureDate(null));
             dispatch(setReturnDate(null));
             dispatch(selectDate(null));
-            // open date selection modal
-            // openModal(resetDates);
             document.querySelector(".date").click();
           },
         }}
-      />
+      />,
+      classes
     );
+  };
+  const setTicketClass = (c) => {
+    console.log(`class is: ${c}`);
+    console.log(ticketClass);
+    dispatch(selectTicketClass(c));
   };
 
   const openModal = (content) => {
@@ -184,6 +241,7 @@ export default function SeartchForm() {
     } else if (content === "passengers") {
       modalRef.current.open(
         <PassengersSelection
+          chooseClass={setTicketClass}
           openAlert={alertMessage}
           closePassengerSelection={closeModal}
           search={submitSearch}
@@ -212,13 +270,13 @@ export default function SeartchForm() {
 
   const updateCalendarBtn = () => {
     if (departureDate) {
-      if (ticketType === ONE_WAY) {
+      if (!roundtrip) {
         return (
           <span className="flex flex-col justify-center items-center">
             {showDates("Departure", departureDate)}{" "}
           </span>
         );
-      } else if (ticketType === ROUND_TRIP) {
+      } else {
         if (returnDate) {
           return (
             <span className="flex justify-around items-center w-full">
@@ -401,6 +459,7 @@ export default function SeartchForm() {
                           className="cursor-pointer hover:bg-blue-turkish z-20"
                           onClick={(e) => {
                             //check if the city have a train station
+
                             if (station.lat < 31.6306304) {
                               setoriginStation([
                                 "bus",
@@ -412,7 +471,12 @@ export default function SeartchForm() {
                                 station.label.toLowerCase(),
                               ]);
                             }
+                            setorginID(station._id);
                             setfromValue(station.city.toLowerCase());
+                            sessionStorage.setItem(
+                              "originCity",
+                              station.city.toLowerCase()
+                            );
                             setfromListdiv("hidden");
                           }}
                           key={station.lat + i}>
@@ -531,6 +595,11 @@ export default function SeartchForm() {
                               ]);
                             }
                             settoValue(station.city.toLowerCase());
+                            setdestinationID(station._id);
+                            sessionStorage.setItem(
+                              "destinationCity",
+                              station.city.toLowerCase()
+                            );
                             settoListdiv("hidden");
                           }}
                           key={station.lat + i}>

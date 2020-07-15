@@ -2,7 +2,8 @@ import React from "react";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import Home from "./components/Pages/Home";
-import ReservationBar from "./components/Pages/ReservationBar";
+import ReservationPage from "./components/Pages/ReservationPage";
+import RamTest from "./components/Pages/RamTest";
 import { Router, Match } from "@reach/router";
 
 function App() {
@@ -24,7 +25,7 @@ function App() {
     {
       text: "Plan and Book",
       path: "/book",
-      icon: "ion-ios-person",
+      icon: "ion-ios-check",
     },
   ];
 
@@ -39,7 +40,8 @@ function App() {
       </Match>
       <Router>
         <Home path="/" styleSetting={styleSetting} />
-        <ReservationBar path="/reservation" />
+        <ReservationPage path="/reservation" />
+        <RamTest path="/test" />
         <Modal path="/modal" />
       </Router>
     </div>

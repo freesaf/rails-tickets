@@ -1,17 +1,67 @@
 import React, { useState } from "react";
 import { Link } from "@reach/router";
+import { EUR, USD, MAD, EN, FR } from "../actions/types";
+import { selectCurrency, selectLanguage } from "../actions";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Header({ navlinks, styleSetting }) {
   const [navOpen, setNavOpen] = useState(false);
+  const state = useSelector((state) => {
+    return state;
+  });
+  localStorage.setItem("currency", state.localisation.currency);
+  const currency = localStorage.getItem("currency");
+  const language = state.localisation.lang;
+  const dispatch = useDispatch();
+
+  const handleChange = (e) => {
+    if (e.target.name === "currency") {
+      dispatch(selectCurrency(e.target.value));
+    } else {
+      dispatch(selectLanguage(e.target.value));
+    }
+  };
 
   return (
     <>
-      <div
-        style={{
-          height: "30px",
-        }}
-        className="bg-gray-700">
-        top navBar
+      <div className="bg-gray-700 flex ">
+        <div className="ml-auto mr-8 mt-1">
+          <span>
+            {currency === EUR ? (
+              <ion-icon
+                class={`text-${styleSetting.primary_Light} align-text-top`}
+                name="logo-euro"></ion-icon>
+            ) : currency === USD ? (
+              <ion-icon
+                class={`text-${styleSetting.primary_Light} align-text-top`}
+                name="logo-usd"></ion-icon>
+            ) : (
+              MAD
+            )}{" "}
+          </span>
+          <select
+            value={currency}
+            onChange={handleChange}
+            className={`bg-gray-700 text-${styleSetting.primary_Light} hover:text-white cursor-pointer`}
+            name="currency"
+            id="">
+            <option value={EUR}>EUR</option>
+            <option value={USD}>USD</option>
+            <option value={MAD}>MAD</option>
+          </select>
+          <ion-icon
+            class={`text-${styleSetting.primary_Light} align-text-top border-l border-dotted ml-2 pl-1`}
+            name="earth"></ion-icon>
+          <select
+            value={language}
+            onChange={handleChange}
+            className={`bg-gray-700 text-${styleSetting.primary_Light} hover:text-white cursor-pointer`}
+            name="language"
+            id="">
+            <option value={EN}>English</option>
+            <option value={FR}>Français</option>
+          </select>
+        </div>
       </div>
       <nav
         onMouseLeave={() => {

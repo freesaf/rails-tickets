@@ -2,6 +2,56 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+.tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  right: 100%; /* To the left of the tooltip */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+}
+
+.arrow-steps .step:after {
+  content: " ";
+  background-image: url("../img/sprite-icons-w3.png");
+  background-position: -446px -342px;
+  background-repeat: no-repeat;
+  height: 60px;
+  width: 13px;
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  right: -2px;
+}
+
+.arrow-steps .step.active:before {
+  border-color: #e81932 transparent;
+  border-style: solid;
+  border-width: 32px 15px 30px;
+  top: 0;
+  content: "";
+  display: block;
+  left: -15px;
+  position: absolute;
+  width: 0;
+}
+.arrow-steps .step.active {
+  color: #fff;
+  background-color: #e81932;
+  padding: 1.25rem 0.75rem;
+}
+
+.arrow-steps .step.active:after {
+  border-left: 20px solid #e81932;
+  right: -18px;
+  border-top: 34px solid transparent;
+  border-bottom: 34px solid transparent;
+  top: -5px;
+  z-index: 1;
+}
+
 body {
   font-size: 14px;
   line-height: 1.42857143;
@@ -10,6 +60,10 @@ body {
 }
 .top-1 {
   top: 1rem;
+}
+
+.w-150 {
+  width: 150%;
 }
 
 form input.lift:focus + label .fromLift,

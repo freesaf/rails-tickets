@@ -8,12 +8,95 @@ import {
   SELECT_DATE,
   SELECT_CLASS,
   FETCH_STATIONS,
-  SELECT_TRAIN,
-  SUBMIT_PASSENGER_INFO,
-  ADD_EXTRA,
-  PROCED_TO_PAYMENTS,
   SELECT_DIRECT_TRIP,
+  SELECT_DESTINATION,
+  SELECT_ORIGIN,
+  SELECT_CURRENCY,
+  SELECT_LANGUAGE,
+  SELECT_DEPARTURE_TRAIN,
+  SELECT_RETURN_TRAIN,
+  SET_CURRENT_RESERVATION_STATE,
+  SET_RESERVATION_STEP_STATUS,
+  FETCH_TRAINS,
+  SET_LOADER,
 } from "./types";
+import axios from "axios";
+
+export const setReservationStepStatus = (stepStatus) => {
+  return {
+    type: SET_RESERVATION_STEP_STATUS,
+    payload: stepStatus,
+  };
+};
+
+export const setCurrentReservationState = (currentState) => {
+  return {
+    type: SET_CURRENT_RESERVATION_STATE,
+    payload: currentState,
+  };
+};
+
+export const selectDepartureTrain = (train) => {
+  return {
+    type: SELECT_DEPARTURE_TRAIN,
+    payload: train,
+  };
+};
+
+export const selectReturnTrain = (train) => {
+  return {
+    type: SELECT_RETURN_TRAIN,
+    payload: train,
+  };
+};
+
+export const setOriginCity = (city) => {
+  return {
+    type: SELECT_ORIGIN,
+    payload: city,
+  };
+};
+
+export const setDestinationCity = (city) => {
+  return {
+    type: SELECT_DESTINATION,
+    payload: city,
+  };
+};
+
+export const selectCurrency = (currency) => {
+  return {
+    type: SELECT_CURRENCY,
+    payload: currency,
+  };
+};
+
+export const selectLanguage = (lang) => {
+  return {
+    type: SELECT_LANGUAGE,
+    payload: lang,
+  };
+};
+
+export const getConvertedPrice = (currency, price) => {
+  const usdRate = 0.103824;
+  const euroRate = 0.0917046;
+  switch (currency) {
+    case "USD":
+      return parseFloat(price * usdRate).toFixed(2);
+    case "EUR":
+      return parseFloat(price * euroRate).toFixed(2);
+    default:
+      return parseFloat(price).toFixed(2);
+  }
+};
+export const getTrainTime = (date) => {
+  let hours = new Date(date).getHours();
+  let minutes = new Date(date).getMinutes();
+  hours = hours < 10 ? `0${hours}` : hours;
+  minutes = minutes < 10 ? `0${minutes}` : minutes;
+  return `${hours}:${minutes}`;
+};
 
 export const setDirectTrip = () => {
   return {
@@ -23,17 +106,37 @@ export const setDirectTrip = () => {
 };
 
 export const fetchStations = () => async (dispatch) => {
-  await fetch("https://www.oncf.ma/en/api/gares/list/")
-    .then((res) => res.json())
-    .then((stations) => {
+  await axios
+    .get("api/stations")
+    .then((response) => {
       dispatch({
         type: FETCH_STATIONS,
-        payload: stations,
+        payload: response.data.cities,
       });
     })
     .catch((err) => {
       console.log(err);
     });
+};
+export const setLoader = (loader) => {
+  return {
+    type: SET_LOADER,
+    payload: loader,
+  };
+};
+
+export const fetchTrains = (data) => async (dispatch) => {
+  dispatch(setLoader(true));
+  await axios
+    .post("api/times", data)
+    .then((response) => {
+      dispatch({
+        type: FETCH_TRAINS,
+        payload: response.data,
+      });
+      dispatch(setLoader(false));
+    })
+    .catch((err) => console.log(err));
 };
 
 export const setTicketType = (ticketType) => {
@@ -63,10 +166,10 @@ export const selectDate = (date) => {
   };
 };
 
-export const selectTicketClass = (ticketClass) => {
+export const selectTicketClass = (ticketC) => {
   return {
     type: SELECT_CLASS,
-    payload: ticketClass,
+    payload: ticketC,
   };
 };
 
@@ -91,6 +194,34 @@ export const selectChildrenPassengerNumber = (num) => {
   };
 };
 
+//Function to capitalize first letter of a string
+export const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+//Function to get passenger count
+export const getPassengersCount = (passengers) => {
+  let adultsCount = 0;
+  let childrenCount = 0;
+  let adultsText;
+  for (let i = 0; i < passengers.length; i++) {
+    if (passengers[i].demographicProfile.id === 1) {
+      childrenCount++;
+    } else if (passengers[i].demographicProfile.id === 3) {
+      adultsCount++;
+    }
+  }
+  if (adultsCount >= 2) {
+    adultsText = "adults";
+  } else {
+    adultsText = "adult";
+  }
+  return {
+    adultsCount,
+    childrenCount,
+    adultsText,
+  };
+};
 export const getDatewithNames = (date) => {
   const formattedDate = {
     dayName: getDaysName(date),
@@ -128,31 +259,53 @@ const getDaysName = (date) => {
 const getMonthName = (date) => {
   switch (date.getMonth()) {
     case 0:
-      return "Jan";
+      return "January";
     case 1:
-      return "Feb";
+      return "February";
     case 2:
-      return "Mar";
+      return "March";
     case 3:
-      return "Apr";
+      return "April";
     case 4:
-      return "Mai";
+      return "May";
     case 5:
-      return "Jun";
+      return "June";
     case 6:
-      return "Jul";
+      return "July";
     case 7:
-      return "Aug";
+      return "August";
     case 8:
-      return "Sep";
+      return "September";
     case 9:
-      return "Oct";
+      return "October";
     case 10:
-      return "Nov";
+      return "November";
     case 11:
-      return "Dec";
+      return "December";
 
     default:
       return null;
+  }
+};
+
+export const getLayoverTime = (
+  tripDuration,
+  firstRangeDuration,
+  secondRangeDuration
+) => {
+  function convertToNumber(stringNumber) {
+    let num = stringNumber.split(":");
+    return parseInt(num[0]) * 60 + parseInt(num[1]);
+  }
+  let layover =
+    convertToNumber(tripDuration) -
+    convertToNumber(firstRangeDuration) -
+    convertToNumber(secondRangeDuration);
+  if (layover >= 60) {
+    let h = parseInt(layover / 60);
+    let min = Math.ceil((layover / 60 - h) * 60);
+    return `${h}h: ${min}m`;
+  } else {
+    return `${layover}m`;
   }
 };

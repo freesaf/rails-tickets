@@ -1,43 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import SearchForm from "../SearchForm";
 import { useDispatch, useSelector } from "react-redux";
-import { setTicketType, setReturnDate } from "../../actions";
-import { ROUND_TRIP, ONE_WAY } from "../../actions/types";
+import {
+  setTicketType,
+  setReturnDate,
+  fetchStations,
+} from "../../actions";
+import Loader from "../Loader";
 
 export default function Home() {
-  // const Request = {
-  //   origin: "190",
-  //   destination: "200",
-  //   originDate: "2020-07-16T11:28:15+00:00",
-  //   intervalTime: "",
-  //   adulte: 1,
-  //   kids: 0,
-  //   comfort: 2,
-  //   intervalTime_originDate: {
-  //     end: "12:00",
-  //     start: "06:01",
-  //     title: "Matinée",
-  //     value: 1,
-  //     disabled: true,
-  //   },
-  //   intervalTime_destinationDate: {
-  //     end: "12:00",
-  //     start: "06:01",
-  //     title: "Matinée",
-  //     value: 1,
-  //     disabled: false,
-  //   },
-  //   destinationDate: null,
-  //   _csrf: null,
-  //   roundtrip: false,
-  // };
-
-  const dispatch = useDispatch();
   const state = useSelector((state) => {
     return state;
   });
+  const roundtrip = state.tickets.roundtrip;
+  useEffect(() => {
+    sessionStorage.setItem("roundtrip", roundtrip);
+    dispatch(fetchStations());
+    console.log("ticket updated");
+  }, [roundtrip]);
+  const dispatch = useDispatch();
   const styleSetting = state.styleSetting;
-  const ticketType = state.tickets.ticketType;
+  const isLoading = state.loader;
 
   const getGreetingMessage = () => {
     if (new Date().getHours() < 12 && new Date().getHours() > 5) {
@@ -66,6 +49,14 @@ export default function Home() {
         backgroundImage:
           "url(https://turkishairlines.ssl.cdn.sdlmedia.com/636866809060120078CY.jpg)",
       }}>
+      <div
+        className={
+          isLoading
+            ? "block absolute z-10 bg-turkishtransp w-full h-screen"
+            : "hidden"
+        }>
+        <Loader />{" "}
+      </div>
       <div className="w-full px-4 pt-4 lg:max-w-screen-lg">
         <div className="hidden py-4 text-center text-4xl text-white md:block">
           {getGreetingMessage()}, <br></br> Where do you want to
@@ -75,7 +66,7 @@ export default function Home() {
           <div className="p-4">
             <label
               className={`${
-                ticketType === ROUND_TRIP
+                roundtrip
                   ? `border-b-3 border-${styleSetting.secondary}`
                   : "border-none"
               } pb-2 mr-2 cursor-pointer`}
@@ -83,20 +74,20 @@ export default function Home() {
               <input
                 className="hidden align-middle md:inline"
                 onChange={() => {
-                  dispatch(setTicketType(ROUND_TRIP));
+                  dispatch(setTicketType(true));
                 }}
                 name="Round trip"
                 id="round"
                 type="radio"
-                value={ROUND_TRIP}
-                checked={ticketType === ROUND_TRIP}
+                value={roundtrip}
+                checked={roundtrip}
               />
               <span className="mx-2 font-medium">Round trip</span>
             </label>
 
             <label
               className={`${
-                ticketType === ONE_WAY
+                !roundtrip
                   ? `border-b-3 border-${styleSetting.secondary}`
                   : "border-none"
               } pb-2 cursor-pointer`}
@@ -104,14 +95,14 @@ export default function Home() {
               <input
                 className="hidden align-middle md:inline"
                 onChange={() => {
-                  dispatch(setTicketType(ONE_WAY));
+                  dispatch(setTicketType(false));
                   dispatch(setReturnDate(null));
                 }}
                 name="One way"
                 id="onew"
                 type="radio"
-                value={ONE_WAY}
-                checked={ticketType === ONE_WAY}
+                value={!roundtrip}
+                checked={!roundtrip}
               />
               <span className="mx-2 font-medium">One way</span>
             </label>

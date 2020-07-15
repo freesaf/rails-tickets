@@ -3,16 +3,22 @@ export const SELECT_RETURN_DATE = "SELECT_RETURN_DATE";
 export const SELECT_TIME_OF_DAY = "SELECT_TIME_OF_DAY";
 export const SELECT_DATE = "SELECT_DATE";
 
-export const SELECT_TRAIN = "SELECT_TRAIN";
+export const SET_CURRENT_RESERVATION_STATE =
+  "SET_CURRENT_RESERVATION_STATE";
+export const SET_RESERVATION_STEP_STATUS =
+  "SET_RESERVATION_STEP_STATUS";
+export const SELECT_DEPARTURE_TRAIN = "SELECT_DEPARTURE_TRAIN";
+export const SELECT_RETURN_TRAIN = "SELECT_RETURN_TRAIN";
 export const SUBMIT_PASSENGER_INFO = "SUBMIT_PASSENGER_INFO";
 export const ADD_EXTRA = "ADD_EXTRA";
 export const PROCED_TO_PAYMENTS = "PROCED_TO_PAYMENTS";
 export const SELECT_DIRECT_TRIP = "SELECT_DIRECT_TRIP";
 
-export const SELECT_ORIGIN_STATION = "SELECT_ORIGIN_STATION";
-export const SELECT_DESTINATION_STATION =
-  "SELECT_DESTINATION_STATION";
+export const SELECT_ORIGIN = "SELECT_ORIGIN";
+export const SELECT_DESTINATION = "SELECT_DESTINATION";
 export const FETCH_STATIONS = "FETCH_STATIONS";
+
+export const FETCH_TRAINS = "FETCH_TRAINS";
 
 export const SELECT_ADULT = "SELECT_ADULT";
 export const SELECT_CHILD = "SELECT_CHILD";
@@ -20,14 +26,21 @@ export const SELECT_CHILD = "SELECT_CHILD";
 export const SELECT_TICKET_TYPE = "SELECT_TICKET_TYPE";
 export const SELECT_CLASS = "SELECT_CLASS";
 
-export const FIRST_CLASS = "FIRST_CLASS";
-export const STANDARD_CLASS = "STANDARD_CLASS";
-export const SINGLE_BED = "SINGLE_BED";
-
-export const ROUND_TRIP = "ROUND_TRIP";
-export const ONE_WAY = "ONE_WAY";
+export const FIRST_CLASS = "1";
+export const STANDARD_CLASS = "2";
+export const SINGLE_BED = "5";
 
 export const NIGHT = "NIGHT";
 export const MORNING = "MORNING";
 export const AFTER_NOON = "AFTER_NOON";
 export const EVENING = "EVENING";
+
+export const EN = "EN";
+export const FR = "FR";
+export const EUR = "EUR";
+export const USD = "USD";
+export const MAD = "MAD";
+export const SELECT_CURRENCY = "SELECT_CURRENCY";
+export const SELECT_LANGUAGE = "SELECT_LANGUAGE";
+
+export const SET_LOADER = "SET_LOADER";

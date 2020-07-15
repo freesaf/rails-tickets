@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  selectTicketClass,
   selectAdultsPassengerNumber,
   selectChildrenPassengerNumber,
 } from "../actions";
@@ -14,7 +13,8 @@ import {
 export default function PassengersSelection({
   closePassengerSelection,
   search,
-  openAlert,
+  chooseClass,
+  // openAlert,
 }) {
   const state = useSelector((state) => {
     return state;
@@ -25,19 +25,15 @@ export default function PassengersSelection({
   const numberOfAdults = state.passengers.adults;
   const numberOfChildren = state.passengers.children;
   const totalPassengers = numberOfAdults + numberOfChildren;
-  const selectedDate = state.time.selectedDate;
+  // const selectedDate = state.time.selectedDate;
   const [errorMsg, seterrorMsg] = useState("");
-
-  const chooseClass = (e) => {
-    dispatch(selectTicketClass(e.target.value));
-  };
 
   const selectAdultPassengers = (e) => {
     if (e.target.id === "addAdult") {
       if (totalPassengers >= 6) {
         //show error
         seterrorMsg(
-          "The maximum number of passengers,that can be selected is 6 "
+          "The maximum number of passengers, that can be selected is 6 "
         );
       } else {
         dispatch(selectAdultsPassengerNumber(numberOfAdults + 1));
@@ -50,7 +46,7 @@ export default function PassengersSelection({
         if (totalPassengers < 2) {
           //show error
           seterrorMsg(
-            "The maximum number of passengers,that can be selected is 6 "
+            "The maximum number of passengers, that can be selected is 6 "
           );
         } else {
           dispatch(selectAdultsPassengerNumber(numberOfAdults - 1));
@@ -58,13 +54,14 @@ export default function PassengersSelection({
         }
       }
     }
+    console.log(numberOfAdults);
   };
   const selectChildrenPassengers = (e) => {
     if (e.target.id === "addChild") {
       if (totalPassengers >= 6) {
         //show error
         seterrorMsg(
-          "The maximum number of passengers,that can be selected is 6 "
+          "The maximum number of passengers, that can be selected is 6 "
         );
       } else {
         dispatch(selectChildrenPassengerNumber(numberOfChildren + 1));
@@ -77,7 +74,7 @@ export default function PassengersSelection({
         if (totalPassengers < 1) {
           //show error
           seterrorMsg(
-            "The maximum number of passengers,that can be selected is 6 "
+            "The maximum number of passengers, that can be selected is 6 "
           );
         } else {
           dispatch(
@@ -113,7 +110,9 @@ export default function PassengersSelection({
       <div className="flex justify-between px-4 items-center flex-wrap">
         <label className="" htmlFor="first">
           <input
-            onChange={chooseClass}
+            onChange={(e) => {
+              chooseClass(e.target.value);
+            }}
             name="First class"
             id="first"
             type="radio"
@@ -128,7 +127,9 @@ export default function PassengersSelection({
 
         <label className="pl-1" htmlFor="second">
           <input
-            onChange={chooseClass}
+            onChange={(e) => {
+              chooseClass(e.target.value);
+            }}
             name="Standard class"
             id="second"
             type="radio"
@@ -143,7 +144,9 @@ export default function PassengersSelection({
 
         <label className="pl-1" htmlFor="bed">
           <input
-            onChange={chooseClass}
+            onChange={(e) => {
+              chooseClass(e.target.value);
+            }}
             name="Single bed"
             id="bed"
             type="radio"

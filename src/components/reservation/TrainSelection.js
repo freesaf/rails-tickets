@@ -1,233 +1,272 @@
 import React, { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-// import * as res from "../../api/prices.json";
-import * as res from "../../api/pricesE.json";
-import TripPrices from "./TripPrices";
-import { setDirectTrip } from "../../actions";
-import TrainDetails from "./TrainDetails";
 import Modal from "../Modal";
+// import * as res from "../../api/prices.json";
+// import * as res from "../../api/pricesE.json";
+import Loader from "../Loader";
+import TrainsList from "./TrainsList";
+import PriceDetail from "./PriceDetail";
+import {
+  selectDepartureTrain,
+  getDatewithNames,
+  capitalizeFirstLetter,
+  setReservationStepStatus,
+  setCurrentReservationState,
+  selectReturnTrain,
+  getPassengersCount,
+  fetchStations,
+} from "../../actions";
+import Train from "./Train";
+import { useNavigate } from "@reach/router";
+import SelectedTrainDetails from "./SelectedTrainDetails";
+import PriceComponent from "./PriceComponent";
 
 export default function TrainSelection() {
-  const state = useSelector((state) => {
-    return state;
-  });
-  const directTrip = state.reservation.directTrip;
+  const state = useSelector((state) => state);
+  const [tripDetailsDisplay, settripDetailsDisplay] = useState(false);
   const styleSetting = state.styleSetting;
-  const [detailsDisplay, setdetailsDisplay] = useState("");
   const dispatch = useDispatch();
-  const modalRef = useRef();
-
-  const closeModal = () => {
-    modalRef.current.close();
+  const navigate = useNavigate();
+  const roundtrip = state.tickets.roundtrip;
+  const [selectedPriceIndx, setselectedPriceIndx] = useState([]);
+  const departureTrain = state.reservation.departureTrain;
+  const returnTrain = state.reservation.returnTrain;
+  // const apiResponse = res.default;
+  const apiResponse = state.trainSearch.trainsTimes;
+  const isLoading = state.loader;
+  const originCity = capitalizeFirstLetter(
+    sessionStorage.getItem("originCity")
+  );
+  const destinationCity = capitalizeFirstLetter(
+    sessionStorage.getItem("destinationCity")
+  );
+  const selectedDate = state.time.selectedDate;
+  const priceDetailsModal = useRef();
+  const openModal = (passengers) => {
+    // priceDetailsModal.current.open(
+    //   <PriceDetail passsengers={passengers} />,
+    //   "w-1/2"
+    // );
   };
-  const openModal = () => {
-    modalRef.current.open(
-      <TrainDetails
-        showPrices={() => {
-          closeModal();
-        }}
-      />
-    );
-  };
 
-  const showDetails = (i) => {
-    //check if the details are already displayed then swich the display
-    if (detailsDisplay === i) {
-      setdetailsDisplay("");
+  const trainSelected = () => {
+    if (roundtrip && departureTrain && returnTrain) {
+      return true;
+    } else if (!roundtrip && departureTrain) {
+      return true;
     } else {
-      setdetailsDisplay(i);
+      return false;
     }
   };
-
-  const getTrainTime = (date) => {
-    let hours = new Date(date).getHours();
-    let minutes = new Date(date).getMinutes();
-    hours = hours < 10 ? `0${hours}` : hours;
-    minutes = minutes < 10 ? `0${minutes}` : minutes;
-    return {
-      hours,
-      minutes,
-    };
-  };
-
-  const getTripduration = (time) => {
-    const t = time.split(":");
-    return {
-      hours: t[0],
-      minutes: t[1],
-    };
-  };
-  const getPassengers = (passengers) => {
-    let adultsText, passengerText;
-    let adultsCount = 0;
-    let childrenCount = 0;
-    for (let i = 0; i < passengers.length; i++) {
-      if (passengers[i].demographicProfile.id == 1) {
-        childrenCount++;
-      } else if (passengers[i].demographicProfile.id == 3) {
-        adultsCount++;
-      }
-    }
-    if (adultsCount >= 2) {
-      adultsText = "adults";
+  const getDestinationAndDates = (direction) => {
+    let departureDate, returnDate;
+    if (roundtrip) {
+      departureDate = getDatewithNames(selectedDate[0]);
+      returnDate = getDatewithNames(selectedDate[1]);
     } else {
-      adultsText = "adult";
+      departureDate = getDatewithNames(selectedDate);
     }
-    if (childrenCount === 1) {
-      passengerText = `${adultsCount} ${adultsText}, ${childrenCount} child`;
-    } else if (childrenCount >= 2) {
-      passengerText = `${adultsCount} ${adultsText}, ${childrenCount} children`;
+    if (direction === "departure") {
+      return `${originCity} to ${destinationCity} on ${departureDate.dayName}, ${departureDate.monthName} ${departureDate.currentDate}`;
     } else {
-      passengerText = `${adultsCount} ${adultsText}`;
+      return `${destinationCity} to ${originCity} on ${returnDate.dayName}, ${returnDate.monthName} ${returnDate.currentDate}`;
     }
+  };
 
+  const getPassengerTotal = () => {
+    console.log("passenger Total");
+  };
+
+  const checkTicketType = () => {
+    if (roundtrip) {
+      return (
+        <>
+          {showTrainsList("departure")}
+          {showTrainsList()}{" "}
+        </>
+      );
+    } else {
+      return <> {showTrainsList("departure")} </>;
+    }
+  };
+  const showTrainsList = (direction) => {
     return (
-      <span
-        className={`text-xxs text-${styleSetting.primary_Light} flex flex-col`}>
-        <span>
-          {passengers.length}{" "}
-          {passengers.length >= 2 ? "Passengers" : "Passenger"}{" "}
-        </span>
-        <span> {passengerText} </span>
-      </span>
-    );
-  };
-
-  const showResults = () => {
-    return res.default.availability.departurePath.map(
-      (departPath, i) => {
-        return (
-          <div
-            key={departPath.dateTimeArrival}
-            className="flex flex-col items-center md:flex-row">
-            <div className="w-full lg:max-w-screen-lg flex flex-no-wrap px-4 py-2">
-              <div className="w-3/4 bg-white shadow hover:shadow-lg md:flex md:justify-between p-4">
-                <div className="relative md:w-10/12">
-                  <div className="flex justify-between">
-                    <div className="flex flex-col">
-                      <span className="font-medium md:text-base">
-                        {`${
-                          getTrainTime(departPath.dateTimeDeparture)
-                            .hours
-                        }:${
-                          getTrainTime(departPath.dateTimeDeparture)
-                            .minutes
-                        }`}
-                      </span>
-                      <span
-                        className={`font-semi-bold text-xxs2 md:text-xxs4 text-${styleSetting.primary_Light}`}>
-                        {
-                          departPath.departureStationId.description
-                            .default
-                        }
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        left: "45%",
-                      }}
-                      className={`absolute text-${styleSetting.primary_Light} flex justify-center text-xxs font-medium`}>
-                      {departPath.segmentsList.length <= 1
-                        ? "Direct"
-                        : departPath.segmentsList[0].arrivalStationId
-                            .description.default}
-                      <span
-                        className={`${
-                          departPath.segmentsList.length <= 1
-                            ? "hidden"
-                            : "inline"
-                        }  absolute top-1 w-3 h-3 rounded-full border bg-white self-center z-10 border-black -mt-1 md:mt-0`}></span>
-                    </span>
-
-                    <hr className="absolute w-2/4 border-black self-center left-12"></hr>
-                    <hr className="absolute w-2/4 border-black self-center right-12"></hr>
-                    <div className="flex flex-col">
-                      <span className="font-medium md:text-base self-end">
-                        {`${
-                          getTrainTime(departPath.dateTimeArrival)
-                            .hours
-                        }:${
-                          getTrainTime(departPath.dateTimeArrival)
-                            .minutes
-                        }`}
-                      </span>
-                      <span
-                        className={`font-semi-bold text-xxs2 md:text-xxs4 text-${styleSetting.primary_Light}`}>
-                        {
-                          departPath.arrivalStationId.description
-                            .default
-                        }
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex border-t md:border-t-0 justify-between items-end md:items-baseline mt-2 pt-1 md:w-2/12 md:flex-col-reverse ">
-                  <span
-                    onClick={() => {
-                      openModal(i, departPath.segmentsList);
-                    }}
-                    className={`md:border-l md:border-black text-xxs2 md:w-full md:text-center font-medium text-${styleSetting.info} cursor-pointer`}>
-                    Details
-                  </span>
-                  <Modal ref={modalRef} />
-                  <span className="md:flex flex-col">
-                    <span
-                      className={`text-xxs text-${styleSetting.primary_Light}`}>
-                      Trip Duration:
-                    </span>
-                    <span className="text-xxs2 md:text-center ">
-                      {` ${
-                        getTripduration(departPath.journeyDuration)
-                          .hours
-                      }h ${
-                        getTripduration(departPath.journeyDuration)
-                          .minutes
-                      }m`}
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <div
-                className={`w-1/4 bg-white flex justify-between items-center shadow ml-1 ${
-                  detailsDisplay === i ? "-mb-2" : ""
-                } `}>
-                <div className="flex flex-col px-2">
-                  {getPassengers(departPath.travelersList)}
-                  <div className="font-semibold text-xxs4 md:text-base">
-                    <span>USD </span>
-                    <span>{departPath.tripPrices[2].data.price}</span>
-                    <span
-                      style={{ fontSize: "55%" }}
-                      className="align-top font-bold">
-                      .00
-                    </span>
-                  </div>
-                </div>
-
-                <ion-icon
-                  onClick={() => {
-                    showDetails(i);
-                  }}
-                  style={{
-                    transition: "all 0.3s ease",
-                  }}
-                  class={`inline-block w-5 h-5 cursor-pointer transform ${
-                    detailsDisplay === i ? "rotate-180" : "rotate-0"
-                  } visible`}
-                  name="chevron-down-outline"></ion-icon>
-              </div>
-            </div>
+      <>
+        <div className="flex justify-center">
+          <div className={`p-4 w-screen lg:max-w-screen-lg `}>
+            <span
+              className={`text-white text-xxs2 md:text-xxs4 uppercase font-medium px-3 py-1 bg-${
+                direction === "departure"
+                  ? styleSetting.secondary
+                  : styleSetting.info
+              }`}>
+              {direction === "departure"
+                ? "Outbound trip"
+                : "Inbound trip"}
+            </span>
             <div
-              className={
-                detailsDisplay === i ? "flex p-4 pt-0" : "hidden"
-              }>
-              <TripPrices />
+              onClick={() => {
+                //remove the selected train and price
+                if (direction === "departure") {
+                  selectedPriceIndx.shift();
+                  dispatch(selectDepartureTrain(null));
+                } else {
+                  selectedPriceIndx.pop();
+                  dispatch(selectReturnTrain(null));
+                }
+              }}
+              className={`${
+                (
+                  direction === "departure"
+                    ? departureTrain
+                    : returnTrain
+                )
+                  ? "inline-block"
+                  : "hidden"
+              } ml-6 border-l border-solid border-black pl-6 text-${
+                styleSetting.info
+              } cursor-pointer`}>
+              <ion-icon
+                class={`text-${styleSetting.info} text-xl align-text-bottom pr-3`}
+                name="create-outline"></ion-icon>
+              <span>Change Train</span>
+            </div>
+            <div className="mt-1 text-2xl font-thin">
+              {getDestinationAndDates(direction)}
             </div>
           </div>
-        );
-      }
+        </div>
+        {(
+          direction === "departure" ? departureTrain : returnTrain
+        ) ? (
+          <div className="flex justify-center">
+            <div className="w-screen lg:max-w-screen-lg p-4">
+              <div
+                onClick={() => {
+                  settripDetailsDisplay(!tripDetailsDisplay);
+                }}
+                className="relative bg-white shadow md:flex md:items-center p-4 mx-2 cursor-pointer">
+                <i
+                  style={{
+                    top: "30%",
+                    left: "-2%",
+                  }}
+                  className="absolute ml-2 inline-block text-green-600 text-2xl align-text-bottom ion-ios-checkmark-circle"
+                />
+                {direction === "departure" ? (
+                  <Train train={departureTrain} />
+                ) : (
+                  <Train train={returnTrain} />
+                )}
+                <span
+                  className={`hidden md:flex flex-col items-center text-${styleSetting.primary_Light} border-l-2 px-6`}>
+                  <span>Trip details</span>
+                  <ion-icon
+                    style={{
+                      transition: "all 0.15s ease",
+                    }}
+                    class={`inline-block w-5 h-5 transform ${
+                      tripDetailsDisplay ? "rotate-180" : "rotate-0"
+                    } visible`}
+                    name="chevron-down-outline"></ion-icon>
+                </span>
+              </div>
+              <div
+                className={`${
+                  tripDetailsDisplay ? "block" : "hidden"
+                } bg-${styleSetting.lightBg} p-4 md:bg-white`}>
+                <SelectedTrainDetails
+                  selectedTrain={
+                    direction === "departure"
+                      ? departureTrain
+                      : returnTrain
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full">
+            {direction === "departure" ? (
+              <TrainsList
+                directionPath={apiResponse.departurePath}
+                selectTrain={(t, l) => {
+                  dispatch(selectDepartureTrain(t));
+                  setselectedPriceIndx([l, ...selectedPriceIndx]);
+                }}
+              />
+            ) : (
+              <TrainsList
+                directionPath={apiResponse.arrivalPath}
+                selectTrain={(t, l) => {
+                  dispatch(selectReturnTrain(t));
+                  setselectedPriceIndx([...selectedPriceIndx, l]);
+                }}
+              />
+            )}
+          </div>
+        )}
+      </>
     );
   };
-
-  return <div>{showResults()}</div>;
+  if (isLoading) {
+    return <Loader />;
+  } else {
+    console.log(apiResponse);
+    if (
+      apiResponse.status === "error" ||
+      Object.keys(apiResponse).length === 0
+    ) {
+      console.log(apiResponse.status);
+      setTimeout(() => {
+        navigate("/");
+      }, 500);
+      return <Loader />;
+    } else {
+      return (
+        <div>
+          <div className="w-full flex flex-col justify-around">
+            {checkTicketType()}
+          </div>
+          <div
+            className={`${
+              trainSelected() ? "block" : "hidden"
+            } fixed flex justify-evenly items-center bottom-0 text-white min-h-1/4s w-full bg-${
+              styleSetting.primary
+            }`}>
+            <span>Total price for {getPassengerTotal()}</span>
+            <span
+              className="cursor-pointer underline"
+              onClick={() => {
+                openModal(getPassengerTotal());
+              }}>
+              Price details
+            </span>
+            <Modal ref={priceDetailsModal} />
+            <button
+              onClick={() => {
+                dispatch(
+                  setReservationStepStatus({
+                    stepName: "trainSelectionCompleted",
+                    status: true,
+                  })
+                );
+                //Go to the next step
+                dispatch(setCurrentReservationState("passenger"));
+              }}
+              style={{
+                height: "fit-content",
+              }}
+              className={`rounded flex justify-evenly bg-${styleSetting.secondary} font-xxs4 font-medium py-3 px-8 leading-10`}>
+              <span>Continue</span>
+              <span className="flex flex-no-wrap text-white pt-px pl-3">
+                <i className="ion-ios-arrow-forward" />
+                <i className="ion-ios-arrow-forward" />
+              </span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   setDepartureDate,
@@ -9,8 +10,6 @@ import {
   getDatewithNames,
 } from "../actions";
 import {
-  ROUND_TRIP,
-  ONE_WAY,
   NIGHT,
   MORNING,
   AFTER_NOON,
@@ -27,8 +26,7 @@ export default function DatePicker({
     return state;
   });
   const styleSetting = state.styleSetting;
-  const ticketType = state.tickets.ticketType;
-  // const ticketClass = state.tickets.ticketClass;
+  const roundtrip = state.tickets.roundtrip;
   const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
   const selectedDate = state.time.selectedDate;
@@ -36,18 +34,18 @@ export default function DatePicker({
   const [alertColor, setalertColor] = useState("");
 
   useEffect(() => {
-    if (departureDate && ticketType === ROUND_TRIP) {
+    if (departureDate && roundtrip) {
       if (returnDate) {
         setdateselectionTitle("Date selection is completed");
         setalertColor("");
       } else {
         setdateselectionTitle("Choose your return date");
       }
-    } else if (departureDate && ticketType === ONE_WAY) {
+    } else if (departureDate && !roundtrip) {
       setdateselectionTitle("Date selection is completed");
       setalertColor("");
     }
-  }, [ticketType, departureDate, returnDate]);
+  }, [roundtrip, departureDate, returnDate]);
   const [dateselectionTitle, setdateselectionTitle] = useState(
     "Choose your departure date"
   );
@@ -74,7 +72,7 @@ export default function DatePicker({
       selectedDate &&
       dateselectionTitle === "Date selection is completed"
     ) {
-      if (ticketType === ROUND_TRIP) {
+      if (roundtrip) {
         const selectedDeparture = getDatewithNames(departureDate);
         const selectedReturn = getDatewithNames(returnDate);
         openAlert(
@@ -126,7 +124,7 @@ export default function DatePicker({
         dispatch(setDepartureDate(date));
       }
       // if the departure date exist but there's no return date (if the user want a roundtrip ticket)
-      else if (!returnDate && ticketType === ROUND_TRIP) {
+      else if (!returnDate && roundtrip) {
         // switch the dates if the returnDate is less than the departureDate
         if (departureDate > date) {
           dispatch(setReturnDate(departureDate));
@@ -166,7 +164,7 @@ export default function DatePicker({
         showNeighboringMonth={false}
         nextLabel={<ion-icon name="chevron-forward"></ion-icon>}
         prevLabel={<ion-icon name="chevron-back"></ion-icon>}
-        selectRange={ticketType === ROUND_TRIP ? true : false}
+        selectRange={roundtrip ? true : false}
         onChange={chooseDate}
         onClickDay={dayClicked}
         //Add text inside selected dates
@@ -295,13 +293,8 @@ export default function DatePicker({
             if (
               dateselectionTitle === "Date selection is completed"
             ) {
-              // if (ticketClass) {
-              //   console.log(ticketType);
-              //   closeDatePicker();
-              // } else {
               closeDatePicker();
               openPassengerSelection();
-              // }
             } else {
               setdateselectionTitle("Please complete Date selection");
               setalertColor("bg-red-700 text-white");
