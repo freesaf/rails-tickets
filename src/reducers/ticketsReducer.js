@@ -1,8 +1,8 @@
 import { SELECT_TICKET_TYPE, SELECT_CLASS } from "../actions/types";
 
 const INITIAL_STATE = {
-  roundtrip: true,
-  ticketClass: "1",
+  roundtrip: false,
+  ticketClass: 1,
 };
 
 export default (state = INITIAL_STATE, action) => {

@@ -7,6 +7,7 @@ import {
   setReturnDate,
   selectDate,
   selectTimeofTheDay,
+  selectTimeofTheDayTitle,
   getDatewithNames,
 } from "../actions";
 import {
@@ -30,6 +31,7 @@ export default function DatePicker({
   const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
   const selectedDate = state.time.selectedDate;
+  const timeOfthedayTitle = state.time.timeOfthedayTitle;
   const timeOftheday = state.time.timeOftheday;
   const [alertColor, setalertColor] = useState("");
 
@@ -54,9 +56,61 @@ export default function DatePicker({
     dispatch(selectDate(date));
   };
 
-  const choosetime = (e) => {
-    dispatch(selectTimeofTheDay(e.target.value));
-  };
+  // const choosetime = (e) => {
+  //   switch (e.target.value) {
+  //     case MORNING:
+  //       dispatch(selectTimeofTheDayTitle(e.target.value));
+  //       dispatch(
+  //         selectTimeofTheDay({
+  //           end: "12:00",
+  //           start: "06:01",
+  //           title: "Matinée",
+  //           value: 1,
+  //           disabled: false,
+  //         })
+  //       );
+  //       break;
+  //     case EVENING:
+  //       dispatch(selectTimeofTheDayTitle(e.target.value));
+  //       dispatch(
+  //         selectTimeofTheDay({
+  //           end: "12:00",
+  //           start: "06:01",
+  //           title: "Matinée",
+  //           value: 1,
+  //           disabled: false,
+  //         })
+  //       );
+  //       break;
+  //     case AFTER_NOON:
+  //       dispatch(selectTimeofTheDayTitle(e.target.value));
+  //       dispatch(
+  //         selectTimeofTheDay({
+  //           end: "12:00",
+  //           start: "06:01",
+  //           title: "Matinée",
+  //           value: 1,
+  //           disabled: false,
+  //         })
+  //       );
+  //       break;
+  //     case NIGHT:
+  //       dispatch(selectTimeofTheDayTitle(e.target.value));
+  //       dispatch(
+  //         selectTimeofTheDay({
+  //           end: "12:00",
+  //           start: "06:01",
+  //           title: "Matinée",
+  //           value: 1,
+  //           disabled: false,
+  //         })
+  //       );
+  //       break;
+
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   const addMonths = (date, months) => {
     var d = date.getDate();
@@ -200,7 +254,7 @@ export default function DatePicker({
           }
         }}
       />
-      <div className="p-2">
+      {/* <div className="p-2">
         <div className="flex justify-center w-full">
           <h3 className={`font-medium text-lg`}>Time preference</h3>
         </div>
@@ -215,7 +269,7 @@ export default function DatePicker({
               id="night"
               type="radio"
               value={NIGHT}
-              checked={NIGHT === timeOftheday}
+              checked={NIGHT === timeOfthedayTitle}
             />
             <span className="flex flex-col">
               <span className="font-medium">Night</span>
@@ -235,7 +289,7 @@ export default function DatePicker({
               id="morning"
               type="radio"
               value={MORNING}
-              checked={MORNING === timeOftheday}
+              checked={MORNING === timeOfthedayTitle}
             />
             <span className="flex flex-col">
               <span className="font-medium">Morning</span>
@@ -255,7 +309,7 @@ export default function DatePicker({
               id="after-noon"
               type="radio"
               value={AFTER_NOON}
-              checked={AFTER_NOON === timeOftheday}
+              checked={AFTER_NOON === timeOfthedayTitle}
             />
             <span className="flex flex-col">
               <span className="font-medium">Afternoon</span>
@@ -275,7 +329,7 @@ export default function DatePicker({
               id="evening"
               type="radio"
               value={EVENING}
-              checked={EVENING === timeOftheday}
+              checked={EVENING === timeOfthedayTitle}
             />
             <span className="flex flex-col">
               <span className="font-medium">Evening</span>
@@ -286,7 +340,7 @@ export default function DatePicker({
             </span>
           </label>
         </div>
-      </div>
+      </div> */}
       <div className="px-2 pb-2">
         <div
           onClick={() => {

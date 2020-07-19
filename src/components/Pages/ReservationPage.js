@@ -4,6 +4,7 @@ import PassengerDetails from "../reservation/PassengerDetails";
 import TrainSelection from "../reservation/TrainSelection";
 import { useSelector } from "react-redux";
 import ReservationProgressBar from "../ReservationProgressBar";
+
 import Loader from "../Loader";
 
 export default function ReservationPage() {
@@ -11,11 +12,6 @@ export default function ReservationPage() {
     return state;
   });
   const navigate = useNavigate();
-  // const styleSetting = state.styleSetting;
-  // const selectedTrain = state.reservation.selectedTrain;
-  // const passengerInfos = state.reservation.passengerInfos;
-  // const otherServices = state.reservation.otherServices;
-  // const payments = state.reservation.payments;
   const currentReservationState =
     state.reservation.currentReservationState;
   const updateReservation = (currentReservationState) => {

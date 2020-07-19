@@ -8,6 +8,7 @@ import locationReducer from "./locationReducer";
 import trainsReducer from "./trainReducer";
 import loaderReducer from "./loaderReducer";
 import ticketsReducer from "./ticketsReducer";
+import requestReducer from "./requestReducer";
 
 export default combineReducers({
   stations: stationsReducer,
@@ -19,4 +20,5 @@ export default combineReducers({
   localisation: locationReducer,
   trainSearch: trainsReducer,
   loader: loaderReducer,
+  reservationData: requestReducer,
 });

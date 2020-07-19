@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   setTicketType,
   setReturnDate,
-  fetchStations,
+  resetState,
 } from "../../actions";
 import Loader from "../Loader";
 
@@ -15,7 +15,6 @@ export default function Home() {
   const roundtrip = state.tickets.roundtrip;
   useEffect(() => {
     sessionStorage.setItem("roundtrip", roundtrip);
-    dispatch(fetchStations());
     console.log("ticket updated");
   }, [roundtrip]);
   const dispatch = useDispatch();

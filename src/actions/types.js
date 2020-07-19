@@ -1,6 +1,9 @@
+export const RESET_STATE = "RESET_STATE";
+
 export const SELECT_DEPARTURE_DATE = "SELECT_DEPARTURE_DATE";
 export const SELECT_RETURN_DATE = "SELECT_RETURN_DATE";
 export const SELECT_TIME_OF_DAY = "SELECT_TIME_OF_DAY";
+export const SELECT_TIME_OF_DAY_TITLE = "SELECT_TIME_OF_DAY_TITLE";
 export const SELECT_DATE = "SELECT_DATE";
 
 export const SET_CURRENT_RESERVATION_STATE =
@@ -16,6 +19,8 @@ export const SELECT_DIRECT_TRIP = "SELECT_DIRECT_TRIP";
 
 export const SELECT_ORIGIN = "SELECT_ORIGIN";
 export const SELECT_DESTINATION = "SELECT_DESTINATION";
+export const SELECT_ORIGIN_ID = "SELECT_ORIGIN_ID";
+export const SELECT_DESTINATION_ID = "SELECT_DESTINATION_ID";
 export const FETCH_STATIONS = "FETCH_STATIONS";
 
 export const FETCH_TRAINS = "FETCH_TRAINS";
@@ -26,9 +31,9 @@ export const SELECT_CHILD = "SELECT_CHILD";
 export const SELECT_TICKET_TYPE = "SELECT_TICKET_TYPE";
 export const SELECT_CLASS = "SELECT_CLASS";
 
-export const FIRST_CLASS = "1";
-export const STANDARD_CLASS = "2";
-export const SINGLE_BED = "5";
+export const FIRST_CLASS = 1;
+export const STANDARD_CLASS = 2;
+export const SINGLE_BED = 5;
 
 export const NIGHT = "NIGHT";
 export const MORNING = "MORNING";

@@ -64,7 +64,11 @@ export default function TripPrices({
               onClick={() => {
                 selectTrain(tripPath, 0);
               }}
-              className={`hidden md:block px-2 py-3 text-white bg-red-800 text-center hover:bg-${styleSetting.secondary} cursor-pointer`}>
+              className={`hidden md:block px-2 py-3 text-white bg-red-800 text-center ${
+                prices.filter((price) => price._id === 3)[0].data
+                  ? `pointer-events-auto hover:bg-${styleSetting.secondary} cursor-pointer`
+                  : "pointer-events-none bg-gray-300 cursor-not-allowed"
+              }`}>
               {" "}
               Select this Train
             </div>
@@ -72,10 +76,17 @@ export default function TripPrices({
               onClick={() => {
                 selectTrain(tripPath, prices[2].data);
               }}
-              className="text-orange-400 border-2 border-solid rounded-full border-orange-400 pt-1 px-2 mr-2 pointer-events-auto cursor-pointer md:cursor-default md:pointer-events-none font-bold whitespace-no-wrap absolute top-41 md:top-1 right-1 md:mt-3 ">
-              {prices[0].data ? (
+              className={`text-orange-400 border-2 border-solid rounded-full border-orange-400 pt-1 px-2 mr-2 font-bold whitespace-no-wrap absolute top-41 md:top-1 right-1 md:mt-3 ${
+                prices.filter((price) => price._id === 3)[0].data
+                  ? "pointer-events-auto cursor-pointer md:cursor-default md:pointer-events-none"
+                  : "pointer-events-none"
+              }`}>
+              {prices.filter((price) => price._id === 3)[0].data ? (
                 <PriceComponent
-                  price={prices[0].data.price}
+                  price={
+                    prices.filter((price) => price._id === 3)[0].data
+                      .price
+                  }
                   currency={currency}
                 />
               ) : (
@@ -128,7 +139,10 @@ export default function TripPrices({
               className="text-teal-400 border-2 border-solid rounded-full border-teal-400 pt-1 px-2 mr-2 pointer-events-auto cursor-pointer md:cursor-default md:pointer-events-none font-bold whitespace-no-wrap absolute top-1 right-1">
               {prices[1].data ? (
                 <PriceComponent
-                  price={prices[1].data.price}
+                  price={
+                    prices.filter((price) => price._id === 2)[0].data
+                      .price
+                  }
                   currency={currency}
                 />
               ) : (
@@ -181,7 +195,10 @@ export default function TripPrices({
               className="text-indigo-400 border-2 border-solid rounded-full border-indigo-400 pt-1 px-2 mr-2 pointer-events-auto cursor-pointer md:cursor-default md:pointer-events-none font-bold whitespace-no-wrap absolute top-1 right-1">
               {prices[2].data ? (
                 <PriceComponent
-                  price={prices[2].data.price}
+                  price={
+                    prices.filter((price) => price._id === 1)[0].data
+                      .price
+                  }
                   currency={currency}
                 />
               ) : (

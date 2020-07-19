@@ -1,9 +1,7 @@
 import React from "react";
 import Header from "./components/Header";
-import Modal from "./components/Modal";
 import Home from "./components/Pages/Home";
 import ReservationPage from "./components/Pages/ReservationPage";
-import RamTest from "./components/Pages/RamTest";
 import { Router, Match } from "@reach/router";
 
 function App() {
@@ -41,8 +39,6 @@ function App() {
       <Router>
         <Home path="/" styleSetting={styleSetting} />
         <ReservationPage path="/reservation" />
-        <RamTest path="/test" />
-        <Modal path="/modal" />
       </Router>
     </div>
   );

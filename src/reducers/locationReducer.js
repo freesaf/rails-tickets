@@ -1,13 +1,13 @@
 import {
   EN,
-  EUR,
   SELECT_CURRENCY,
   SELECT_LANGUAGE,
+  MAD,
 } from "../actions/types";
 
 const INITIAL_STATE = {
   lang: EN,
-  currency: EUR,
+  currency: MAD,
 };
 
 export default (state = INITIAL_STATE, action) => {

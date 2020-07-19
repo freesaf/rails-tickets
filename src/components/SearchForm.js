@@ -1,12 +1,11 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "@reach/router";
 import { useSelector, useDispatch } from "react-redux";
-import moment from "moment";
 
 import Modal from "./Modal";
 import DatePicker from "./DatePicker";
 import PassengersSelection from "./PassengersSelection";
-import * as cities from "../api/stations.json";
+// import * as cities from "../api/stations.json";
 import TwoOptionAlert from "./TwoOptionAlert";
 import Loader from "../components/Loader";
 import {
@@ -16,8 +15,10 @@ import {
   getDatewithNames,
   setOriginCity,
   setDestinationCity,
+  fetchStations,
   fetchTrains,
-  selectTicketClass,
+  setoriginID,
+  setdestinationID,
 } from "../actions";
 import {
   FIRST_CLASS,
@@ -27,19 +28,10 @@ import {
 import { useEffect } from "react";
 
 export default function SeartchForm() {
-  const state = useSelector((state) => {
-    return state;
-  });
-  // const isLoading = state.loader;
-
-  // useEffect(() => {
-  //   if (isLoading) {
-  //     modalRef.current.open(<Loader />);
-  //   }
-  // }, [isLoading]);
+  const state = useSelector((state) => state);
   const navigate = useNavigate();
   const styleSetting = state.styleSetting;
-  const stations = cities.cities;
+  const stations = state.stations.cities;
   const [originStation, setoriginStation] = useState([]);
   const [destinationStation, setdestinationStation] = useState([]);
   const [fromListdiv, setfromListdiv] = useState("hidden");
@@ -49,19 +41,103 @@ export default function SeartchForm() {
   const [toValue, settoValue] = useState("");
   const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
-  const ticketClass = state.tickets.ticketClass;
-  const roundtrip = state.tickets.roundtrip;
-  const numberOfAdults = state.passengers.adults;
-  const numberOfChildren = state.passengers.children;
+  const ticketClass = state.reservationData.comfort;
+  const roundtrip = state.reservationData.roundtrip;
+  const numberOfAdults = state.reservationData.adulte;
+  const numberOfChildren = state.reservationData.kids;
   const totalPassengers = numberOfAdults + numberOfChildren;
   const timeOftheday = state.time.timeOftheday;
-  const [originID, setorginID] = useState(null);
-  const [destinationID, setdestinationID] = useState(null);
-  const isLoading = state.loader;
-  // const passengers = {
-  //   adults: state.passengers.adults,
-  //   children: state.passengers.children,
-  // };
+  const reservationData = state.reservationData;
+  const isConnected = window.navigator.onLine;
+
+  useEffect(() => {
+    if (isConnected) {
+      console.log("stations updated");
+      dispatch(fetchStations());
+    } else {
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4 px-8 text-xl flex">
+              <span>
+                {"Please check your internet connexion and try again"}
+              </span>
+            </div>
+          ),
+          option1text: "Ok",
+        },
+        "reload",
+        "",
+        "w-1/2"
+      );
+    }
+  }, [isConnected]);
+
+  const checkResponse = (resp) => {
+    console.log("checking response");
+    console.log(typeof resp);
+    if (resp === undefined) {
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4 px-8 text-xl flex">
+              <span>
+                {"Please check your internet connexion and try again"}
+              </span>
+            </div>
+          ),
+          option1text: "Ok",
+        },
+        "reload",
+        "",
+        "w-1/2"
+      );
+    } else if (Object.keys(resp).length === 0) {
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4 px-8 text-xl flex">
+              <span>
+                {
+                  "something went wrong!! this page will reload and everything will be fine :)"
+                }
+              </span>
+            </div>
+          ),
+          option1text: "Ok",
+        },
+        "reload",
+        "",
+        "w-1/2"
+      );
+    } else {
+      if (resp.status === "error" || resp.status === 500) {
+        alertMessage(
+          {
+            title: "Error",
+            body: (
+              <div className="pt-4 px-8 text-xl flex">
+                <span>
+                  {resp.error === "Aucun train n'est disponible"
+                    ? "No train was found please try again with different date or stations"
+                    : "Please check your internet connexion and try again"}{" "}
+                </span>
+              </div>
+            ),
+            option1text: "Ok",
+          },
+          "reload",
+          "",
+          "w-1/2"
+        );
+      } else if (resp.departurePath) {
+        navigate("/reservation");
+      }
+    }
+  };
 
   const checkInputFields = () => {
     let errors = [];
@@ -83,65 +159,12 @@ export default function SeartchForm() {
       return null;
     }
   };
-  const apiResponse = state.trainSearch.trainsTimes;
   const submitSearch = (e) => {
     e.preventDefault();
     if (checkInputFields() === null) {
-      const reservationData = {
-        origin: originID,
-        destination: destinationID,
-        originDate: moment(departureDate).format(),
-        intervalTime: "",
-        adulte: state.passengers.adults,
-        kids: state.passengers.children,
-        comfort: ticketClass,
-        "intervalTime-originDate": {
-          end: "12:00",
-          start: "06:01",
-          title: "Matinée",
-          value: 1,
-          disabled: false,
-        },
-        roundtrip: roundtrip,
-        "intervalTime-destinationDate": {
-          end: "12:00",
-          start: "06:01",
-          title: "Matinée",
-          value: 1,
-          disabled: false,
-        },
-        destinationDate: roundtrip ? moment(returnDate).format() : "",
-        _csrf: null,
-      };
-      // remove these
-      // dispatch(setOriginCity(fromValue));
-      // dispatch(setDestinationCity(toValue));
-      console.log(reservationData);
-      console.log(numberOfChildren);
-      dispatch(fetchTrains(reservationData));
-      setTimeout(() => {
-        while (isLoading) {
-          return <Loader />;
-        }
-        if (apiResponse.status === "error") {
-          alertMessage(
-            {
-              title: "Error",
-              body: (
-                <div className="pt-4">
-                  <span>{apiResponse.message} </span>
-                </div>
-              ),
-              option1text: "Ok",
-            },
-            "",
-            "",
-            "w-1/2"
-          );
-        } else {
-          navigate("/reservation");
-        }
-      }, 200);
+      dispatch(fetchTrains(reservationData)).then((res) => {
+        checkResponse(res);
+      });
     } else {
       alertMessage(
         {
@@ -206,6 +229,8 @@ export default function SeartchForm() {
               document.querySelector(".passengers").click();
             } else if (goto === "date") {
               document.querySelector(".date").click();
+            } else if (goto === "reload") {
+              window.location.reload();
             }
           },
           //Decline
@@ -220,11 +245,6 @@ export default function SeartchForm() {
       />,
       classes
     );
-  };
-  const setTicketClass = (c) => {
-    console.log(`class is: ${c}`);
-    console.log(ticketClass);
-    dispatch(selectTicketClass(c));
   };
 
   const openModal = (content) => {
@@ -241,10 +261,15 @@ export default function SeartchForm() {
     } else if (content === "passengers") {
       modalRef.current.open(
         <PassengersSelection
-          chooseClass={setTicketClass}
           openAlert={alertMessage}
           closePassengerSelection={closeModal}
-          search={submitSearch}
+          search={() => {
+            if (window.screen.width >= 768) {
+              document.querySelector(".searchDesktop").click();
+            } else {
+              document.querySelector(".searchMobile").click();
+            }
+          }}
         />
       );
     }
@@ -460,7 +485,11 @@ export default function SeartchForm() {
                           onClick={(e) => {
                             //check if the city have a train station
 
-                            if (station.lat < 31.6306304) {
+                            if (
+                              station.label
+                                .toLowerCase()
+                                .includes("supra")
+                            ) {
                               setoriginStation([
                                 "bus",
                                 station.label.toLowerCase(),
@@ -471,7 +500,7 @@ export default function SeartchForm() {
                                 station.label.toLowerCase(),
                               ]);
                             }
-                            setorginID(station._id);
+                            dispatch(setoriginID(station._id));
                             setfromValue(station.city.toLowerCase());
                             sessionStorage.setItem(
                               "originCity",
@@ -583,7 +612,11 @@ export default function SeartchForm() {
                           className="cursor-pointer hover:bg-blue-turkish z-20"
                           onClick={() => {
                             //check if the city have a train station
-                            if (station.lat < 31.6306304) {
+                            if (
+                              station.label
+                                .toLowerCase()
+                                .includes("supra")
+                            ) {
                               setdestinationStation([
                                 "bus",
                                 station.label.toLowerCase(),
@@ -595,7 +628,7 @@ export default function SeartchForm() {
                               ]);
                             }
                             settoValue(station.city.toLowerCase());
-                            setdestinationID(station._id);
+                            dispatch(setdestinationID(station._id));
                             sessionStorage.setItem(
                               "destinationCity",
                               station.city.toLowerCase()
@@ -678,12 +711,12 @@ export default function SeartchForm() {
         <Modal ref={modalRef} />
       </div>
       <input
-        className={`bg-${styleSetting.secondary} cursor-pointer md:hidden text-white text-4xl w-full h-22t my-4 md:ml-4 md:my-0`}
+        className={`bg-${styleSetting.secondary} searchMobile cursor-pointer md:hidden text-white text-4xl w-full h-22t my-4 md:ml-4 md:my-0`}
         type="submit"
         value="Search"
       />
       <input
-        className={`bg-${styleSetting.secondary} cursor-pointer hidden md:inline text-white text-4xl w-40 h-22t my-4 md:ml-4 md:my-0`}
+        className={`bg-${styleSetting.secondary} searchDesktop cursor-pointer hidden md:inline text-white text-4xl w-40 h-22t my-4 md:ml-4 md:my-0`}
         type="submit"
         value=">"
       />

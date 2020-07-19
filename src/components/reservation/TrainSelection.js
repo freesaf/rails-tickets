@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Modal from "../Modal";
 // import * as res from "../../api/prices.json";
@@ -22,6 +22,13 @@ import SelectedTrainDetails from "./SelectedTrainDetails";
 import PriceComponent from "./PriceComponent";
 
 export default function TrainSelection() {
+  if (
+    sessionStorage.getItem("originCity") === null ||
+    sessionStorage.getItem("destinationCity") === null ||
+    sessionStorage.getItem("roundtrip") === null
+  ) {
+    window.location.replace("/");
+  }
   const state = useSelector((state) => state);
   const [tripDetailsDisplay, settripDetailsDisplay] = useState(false);
   const styleSetting = state.styleSetting;
@@ -40,7 +47,9 @@ export default function TrainSelection() {
   const destinationCity = capitalizeFirstLetter(
     sessionStorage.getItem("destinationCity")
   );
-  const selectedDate = state.time.selectedDate;
+
+  const deDate = state.time.departureDate;
+  const reDate = state.time.returnDate;
   const priceDetailsModal = useRef();
   const openModal = (passengers) => {
     // priceDetailsModal.current.open(
@@ -58,13 +67,14 @@ export default function TrainSelection() {
       return false;
     }
   };
+
   const getDestinationAndDates = (direction) => {
     let departureDate, returnDate;
     if (roundtrip) {
-      departureDate = getDatewithNames(selectedDate[0]);
-      returnDate = getDatewithNames(selectedDate[1]);
+      departureDate = getDatewithNames(deDate);
+      returnDate = getDatewithNames(reDate);
     } else {
-      departureDate = getDatewithNames(selectedDate);
+      departureDate = getDatewithNames(deDate);
     }
     if (direction === "departure") {
       return `${originCity} to ${destinationCity} on ${departureDate.dayName}, ${departureDate.monthName} ${departureDate.currentDate}`;
@@ -188,13 +198,21 @@ export default function TrainSelection() {
         ) : (
           <div className="w-full">
             {direction === "departure" ? (
-              <TrainsList
-                directionPath={apiResponse.departurePath}
-                selectTrain={(t, l) => {
-                  dispatch(selectDepartureTrain(t));
-                  setselectedPriceIndx([l, ...selectedPriceIndx]);
-                }}
-              />
+              <>
+                <TrainsList
+                  directionPath={apiResponse.departurePath}
+                  selectTrain={(t, l) => {
+                    dispatch(selectDepartureTrain(t));
+                    setselectedPriceIndx([l, ...selectedPriceIndx]);
+                  }}
+                />
+                <span
+                  className={`${
+                    apiResponse.nextCta.next ? "block" : "hidden"
+                  }`}>
+                  Load more
+                </span>
+              </>
             ) : (
               <TrainsList
                 directionPath={apiResponse.arrivalPath}
@@ -212,61 +230,53 @@ export default function TrainSelection() {
   if (isLoading) {
     return <Loader />;
   } else {
-    console.log(apiResponse);
-    if (
-      apiResponse.status === "error" ||
-      Object.keys(apiResponse).length === 0
-    ) {
-      console.log(apiResponse.status);
-      setTimeout(() => {
-        navigate("/");
-      }, 500);
-      return <Loader />;
-    } else {
-      return (
-        <div>
-          <div className="w-full flex flex-col justify-around">
-            {checkTicketType()}
-          </div>
-          <div
-            className={`${
-              trainSelected() ? "block" : "hidden"
-            } fixed flex justify-evenly items-center bottom-0 text-white min-h-1/4s w-full bg-${
-              styleSetting.primary
-            }`}>
-            <span>Total price for {getPassengerTotal()}</span>
-            <span
-              className="cursor-pointer underline"
-              onClick={() => {
-                openModal(getPassengerTotal());
-              }}>
-              Price details
-            </span>
-            <Modal ref={priceDetailsModal} />
-            <button
-              onClick={() => {
-                dispatch(
-                  setReservationStepStatus({
-                    stepName: "trainSelectionCompleted",
-                    status: true,
-                  })
-                );
-                //Go to the next step
-                dispatch(setCurrentReservationState("passenger"));
-              }}
-              style={{
-                height: "fit-content",
-              }}
-              className={`rounded flex justify-evenly bg-${styleSetting.secondary} font-xxs4 font-medium py-3 px-8 leading-10`}>
-              <span>Continue</span>
-              <span className="flex flex-no-wrap text-white pt-px pl-3">
-                <i className="ion-ios-arrow-forward" />
-                <i className="ion-ios-arrow-forward" />
-              </span>
-            </button>
-          </div>
+    return (
+      <div>
+        <div className="w-full flex flex-col justify-around">
+          {checkTicketType()}
         </div>
-      );
-    }
+        <div
+          className={`${
+            trainSelected() ? "block" : "hidden"
+          } fixed flex justify-evenly items-center bottom-0 text-white min-h-1/4s w-full bg-${
+            styleSetting.primary
+          }`}>
+          <span>
+            Total price for{" "}
+            {apiResponse.departurePath[0].travelersList.length}{" "}
+            passenger(s)
+          </span>
+          <span
+            className="cursor-pointer underline"
+            onClick={() => {
+              openModal(getPassengerTotal());
+            }}>
+            Price details
+          </span>
+          <Modal ref={priceDetailsModal} />
+          <button
+            onClick={() => {
+              dispatch(
+                setReservationStepStatus({
+                  stepName: "trainSelectionCompleted",
+                  status: true,
+                })
+              );
+              //Go to the next step
+              dispatch(setCurrentReservationState("passenger"));
+            }}
+            style={{
+              height: "fit-content",
+            }}
+            className={`rounded flex justify-evenly bg-${styleSetting.secondary} font-xxs4 font-medium py-3 px-8 leading-10`}>
+            <span>Continue</span>
+            <span className="flex flex-no-wrap text-white pt-px pl-3">
+              <i className="ion-ios-arrow-forward" />
+              <i className="ion-ios-arrow-forward" />
+            </span>
+          </button>
+        </div>
+      </div>
+    );
   }
 }

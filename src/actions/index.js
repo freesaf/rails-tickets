@@ -5,12 +5,15 @@ import {
   SELECT_DEPARTURE_DATE,
   SELECT_RETURN_DATE,
   SELECT_TIME_OF_DAY,
+  SELECT_TIME_OF_DAY_TITLE,
   SELECT_DATE,
   SELECT_CLASS,
   FETCH_STATIONS,
   SELECT_DIRECT_TRIP,
   SELECT_DESTINATION,
   SELECT_ORIGIN,
+  SELECT_DESTINATION_ID,
+  SELECT_ORIGIN_ID,
   SELECT_CURRENCY,
   SELECT_LANGUAGE,
   SELECT_DEPARTURE_TRAIN,
@@ -19,6 +22,7 @@ import {
   SET_RESERVATION_STEP_STATUS,
   FETCH_TRAINS,
   SET_LOADER,
+  RESET_STATE,
 } from "./types";
 import axios from "axios";
 
@@ -64,6 +68,19 @@ export const setDestinationCity = (city) => {
   };
 };
 
+export const setoriginID = (ID) => {
+  return {
+    type: SELECT_ORIGIN_ID,
+    payload: ID,
+  };
+};
+
+export const setdestinationID = (ID) => {
+  return {
+    type: SELECT_DESTINATION_ID,
+    payload: ID,
+  };
+};
 export const selectCurrency = (currency) => {
   return {
     type: SELECT_CURRENCY,
@@ -127,6 +144,7 @@ export const setLoader = (loader) => {
 
 export const fetchTrains = (data) => async (dispatch) => {
   dispatch(setLoader(true));
+  let res;
   await axios
     .post("api/times", data)
     .then((response) => {
@@ -135,8 +153,20 @@ export const fetchTrains = (data) => async (dispatch) => {
         payload: response.data,
       });
       dispatch(setLoader(false));
+      res = response.data;
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      res = err;
+      console.log(err);
+      dispatch(setLoader(false));
+    });
+  return res;
+};
+
+export const resetState = () => {
+  return {
+    type: RESET_STATE,
+  };
 };
 
 export const setTicketType = (ticketType) => {
@@ -180,6 +210,13 @@ export const selectTimeofTheDay = (time) => {
   };
 };
 
+export const selectTimeofTheDayTitle = (time) => {
+  return {
+    type: SELECT_TIME_OF_DAY_TITLE,
+    payload: time,
+  };
+};
+
 export const selectAdultsPassengerNumber = (num) => {
   return {
     type: SELECT_ADULT,
@@ -187,11 +224,11 @@ export const selectAdultsPassengerNumber = (num) => {
   };
 };
 
-export const selectChildrenPassengerNumber = (num) => {
-  return {
+export const selectChildrenPassengerNumber = (num) => (dispatch) => {
+  dispatch({
     type: SELECT_CHILD,
     payload: num,
-  };
+  });
 };
 
 //Function to capitalize first letter of a string

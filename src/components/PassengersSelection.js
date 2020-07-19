@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   selectAdultsPassengerNumber,
   selectChildrenPassengerNumber,
+  selectTicketClass,
 } from "../actions";
 import {
   FIRST_CLASS,
@@ -13,7 +14,6 @@ import {
 export default function PassengersSelection({
   closePassengerSelection,
   search,
-  chooseClass,
   // openAlert,
 }) {
   const state = useSelector((state) => {
@@ -21,12 +21,17 @@ export default function PassengersSelection({
   });
   const styleSetting = state.styleSetting;
   const dispatch = useDispatch();
-  const ticketClass = state.tickets.ticketClass;
-  const numberOfAdults = state.passengers.adults;
-  const numberOfChildren = state.passengers.children;
+  const ticketClass = state.reservationData.comfort;
+  const numberOfAdults = state.reservationData.adulte;
+  const numberOfChildren = state.reservationData.kids;
   const totalPassengers = numberOfAdults + numberOfChildren;
   // const selectedDate = state.time.selectedDate;
   const [errorMsg, seterrorMsg] = useState("");
+
+  const chooseClass = (comfort) => {
+    comfort = Number(comfort);
+    dispatch(selectTicketClass(comfort));
+  };
 
   const selectAdultPassengers = (e) => {
     if (e.target.id === "addAdult") {
@@ -263,9 +268,9 @@ export default function PassengersSelection({
 
       <div className="px-2 pb-2">
         <div
-          onClick={(e) => {
+          onClick={() => {
             closePassengerSelection();
-            search(e);
+            search();
           }}
           className={`bg-${styleSetting.secondary} text-white text-xl w-full mt-2 rounded-xl h-16 flex justify-center items-center text-align-center cursor-pointer`}>
           Search
