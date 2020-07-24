@@ -23,6 +23,9 @@ import {
   FETCH_TRAINS,
   SET_LOADER,
   RESET_STATE,
+  SELECT_DEPART_PRICE,
+  SELECT_RETURN_PRICE,
+  SUBMIT_PASSENGER_INFO,
 } from "./types";
 import axios from "axios";
 
@@ -51,6 +54,20 @@ export const selectReturnTrain = (train) => {
   return {
     type: SELECT_RETURN_TRAIN,
     payload: train,
+  };
+};
+
+export const selectDepartPrice = (price) => {
+  return {
+    type: SELECT_DEPART_PRICE,
+    payload: price,
+  };
+};
+
+export const selectReturnPrice = (price) => {
+  return {
+    type: SELECT_RETURN_PRICE,
+    payload: price,
   };
 };
 
@@ -259,6 +276,13 @@ export const getPassengersCount = (passengers) => {
     adultsText,
   };
 };
+
+export const updatePassengerInfos = (passengerInfo) => {
+  return {
+    type: SUBMIT_PASSENGER_INFO,
+    payload: passengerInfo,
+  };
+};
 export const getDatewithNames = (date) => {
   const formattedDate = {
     dayName: getDaysName(date),
@@ -325,11 +349,7 @@ const getMonthName = (date) => {
   }
 };
 
-export const getLayoverTime = (
-  tripDuration,
-  firstRangeDuration,
-  secondRangeDuration
-) => {
+export const getLayoverTime = (tripDuration, firstRangeDuration, secondRangeDuration) => {
   function convertToNumber(stringNumber) {
     let num = stringNumber.split(":");
     return parseInt(num[0]) * 60 + parseInt(num[1]);

@@ -7,20 +7,24 @@ import {
   SELECT_DIRECT_TRIP,
   SET_CURRENT_RESERVATION_STATE,
   SET_RESERVATION_STEP_STATUS,
+  SELECT_RETURN_PRICE,
+  SELECT_DEPART_PRICE,
 } from "../actions/types";
 
 const INITIAL_STATE = {
   currentReservationState: "train",
   trainSelectionCompleted: true,
-  passengerInfosCompleted: true,
+  passengerInfosCompleted: false,
   confirmationCompleted: false,
   paymentCompleted: false,
   departureTrain: null,
   returnTrain: null,
-  passengerInfos: null,
+  passengerInfos: "",
   otherServices: null,
   payments: null,
   directTrip: null,
+  departPrice: null,
+  returnPrice: null,
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -44,6 +48,10 @@ export default (state = INITIAL_STATE, action) => {
       return { ...state, payments: action.payload };
     case SELECT_DIRECT_TRIP:
       return { ...state, directTrip: action.payload };
+    case SELECT_DEPART_PRICE:
+      return { ...state, departPrice: action.payload };
+    case SELECT_RETURN_PRICE:
+      return { ...state, returnPrice: action.payload };
     default:
       return state;
   }

@@ -75,6 +75,13 @@ form input.tolift:valid + label .toLift {
   font-size: 14px;
 }
 
+form input.passlift:focus + label .passengerForm,
+form input.passlift:valid + label .passengerForm {
+  transform: translateY(-130%);
+  color: #2073e3;
+  font-size: 14px;
+}
+
 form input.lift:focus + label + .originStation,
 form input.tolift:focus + label + .destinationStation {
   display: flex;

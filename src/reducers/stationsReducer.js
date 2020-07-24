@@ -1,13 +1,9 @@
-import {
-  SELECT_DESTINATION,
-  SELECT_ORIGIN,
-  FETCH_STATIONS,
-} from "../actions/types";
+import { SELECT_DESTINATION, SELECT_ORIGIN, FETCH_STATIONS } from "../actions/types";
 
 const INITIAL_STATE = {
-  originCity: null,
-  destinationCity: null,
-  cities: [],
+  originCity: "",
+  destinationCity: "",
+  cities: null,
 };
 
 export default (state = INITIAL_STATE, action) => {

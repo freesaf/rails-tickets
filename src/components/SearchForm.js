@@ -1,44 +1,39 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@reach/router";
 import { useSelector, useDispatch } from "react-redux";
 
+//import components
 import Modal from "./Modal";
 import DatePicker from "./DatePicker";
 import PassengersSelection from "./PassengersSelection";
-// import * as cities from "../api/stations.json";
 import TwoOptionAlert from "./TwoOptionAlert";
-import Loader from "../components/Loader";
+
+//import action and actions types
 import {
   setDepartureDate,
   setReturnDate,
   selectDate,
   getDatewithNames,
-  setOriginCity,
-  setDestinationCity,
   fetchStations,
   fetchTrains,
   setoriginID,
   setdestinationID,
+  setOriginCity,
+  setDestinationCity,
 } from "../actions";
-import {
-  FIRST_CLASS,
-  STANDARD_CLASS,
-  SINGLE_BED,
-} from "../actions/types";
-import { useEffect } from "react";
+import { FIRST_CLASS, STANDARD_CLASS, SINGLE_BED } from "../actions/types";
 
 export default function SeartchForm() {
   const state = useSelector((state) => state);
-  const navigate = useNavigate();
   const styleSetting = state.styleSetting;
-  const stations = state.stations.cities;
+  const stations = state.stations.cities || [];
+  sessionStorage.setItem("stations", JSON.stringify(stations));
   const [originStation, setoriginStation] = useState([]);
   const [destinationStation, setdestinationStation] = useState([]);
-  const [fromListdiv, setfromListdiv] = useState("hidden");
-  const [toListdiv, settoListdiv] = useState("hidden");
-  const dispatch = useDispatch();
-  const [fromValue, setfromValue] = useState("");
-  const [toValue, settoValue] = useState("");
+  const [originStationsListDisplay, setoriginStationsListDisplay] = useState("hidden");
+  const [destinationStationsListDisplay, setdestinationStationsListDisplay] = useState("hidden");
+  const originCity = state.stations.originCity;
+  const destinationCity = state.stations.destinationCity;
   const departureDate = state.time.departureDate;
   const returnDate = state.time.returnDate;
   const ticketClass = state.reservationData.comfort;
@@ -50,19 +45,20 @@ export default function SeartchForm() {
   const reservationData = state.reservationData;
   const isConnected = window.navigator.onLine;
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const modalRef = useRef();
+
   useEffect(() => {
-    if (isConnected) {
-      console.log("stations updated");
-      dispatch(fetchStations());
-    } else {
+    console.log("stations updated");
+    dispatch(fetchStations());
+    if (!isConnected) {
       alertMessage(
         {
           title: "Error",
           body: (
             <div className="pt-4 px-8 text-xl flex">
-              <span>
-                {"Please check your internet connexion and try again"}
-              </span>
+              <span>{"Please check your internet connexion and try again"}</span>
             </div>
           ),
           option1text: "Ok",
@@ -74,71 +70,42 @@ export default function SeartchForm() {
     }
   }, [isConnected]);
 
-  const checkResponse = (resp) => {
-    console.log("checking response");
-    console.log(typeof resp);
-    if (resp === undefined) {
-      alertMessage(
-        {
-          title: "Error",
-          body: (
-            <div className="pt-4 px-8 text-xl flex">
-              <span>
-                {"Please check your internet connexion and try again"}
-              </span>
-            </div>
-          ),
-          option1text: "Ok",
-        },
-        "reload",
-        "",
-        "w-1/2"
-      );
-    } else if (Object.keys(resp).length === 0) {
-      alertMessage(
-        {
-          title: "Error",
-          body: (
-            <div className="pt-4 px-8 text-xl flex">
-              <span>
-                {
-                  "something went wrong!! this page will reload and everything will be fine :)"
-                }
-              </span>
-            </div>
-          ),
-          option1text: "Ok",
-        },
-        "reload",
-        "",
-        "w-1/2"
-      );
+  const submitSearch = (e) => {
+    e.preventDefault();
+    if (checkInputFields() === null) {
+      dispatch(fetchTrains(reservationData)).then((res) => {
+        checkResponse(res);
+      });
     } else {
-      if (resp.status === "error" || resp.status === 500) {
-        alertMessage(
-          {
-            title: "Error",
-            body: (
-              <div className="pt-4 px-8 text-xl flex">
-                <span>
-                  {resp.error === "Aucun train n'est disponible"
-                    ? "No train was found please try again with different date or stations"
-                    : "Please check your internet connexion and try again"}{" "}
-                </span>
-              </div>
-            ),
-            option1text: "Ok",
-          },
-          "reload",
-          "",
-          "w-1/2"
-        );
-      } else if (resp.departurePath) {
-        navigate("/reservation");
-      }
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4">
+              <span>Please fill all the required fields:</span>
+              {checkInputFields().map((err) => {
+                return (
+                  <div key={err} className={`${styleSetting.secondary} flex items-center font-semibold pl-8`}>
+                    <ion-icon class={`text-${styleSetting.secondary}`} name="warning-sharp"></ion-icon>
+                    <span>{err}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ),
+          option1text: "Complete my reservation",
+        },
+        (() => {
+          let err = checkInputFields();
+          if (err.includes("Departure date") || err.includes("Return date")) {
+            return "date";
+          }
+        })()
+      );
     }
   };
 
+  // Check input fields for errors
   const checkInputFields = () => {
     let errors = [];
     if (originStation.length < 1) {
@@ -159,93 +126,73 @@ export default function SeartchForm() {
       return null;
     }
   };
-  const submitSearch = (e) => {
-    e.preventDefault();
-    if (checkInputFields() === null) {
-      dispatch(fetchTrains(reservationData)).then((res) => {
-        checkResponse(res);
-      });
+
+  //check the server response before navigating to the reservation page
+
+  const checkResponse = (resp) => {
+    if (resp === undefined) {
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4 px-8 text-xl flex">
+              <span>{"Please check your internet connexion and try again"}</span>
+            </div>
+          ),
+          option1text: "Ok",
+        },
+        "reload",
+        "",
+        "w-1/2"
+      );
+    } else if (resp.status === "error" || resp.status === 500) {
+      alertMessage(
+        {
+          title: "Error",
+          body: (
+            <div className="pt-4 px-8 text-xl flex">
+              <span>
+                {resp.error === "Aucun train n'est disponible"
+                  ? "No train was found please try again with different date or stations"
+                  : "Please check your internet connexion and try again"}{" "}
+              </span>
+            </div>
+          ),
+          option1text: "Ok",
+        },
+        "reload",
+        "",
+        "w-1/2"
+      );
+    } else if (resp.departurePath) {
+      sessionStorage.setItem("apiResponse", JSON.stringify(resp));
+      navigate("/reservation");
     } else {
       alertMessage(
         {
           title: "Error",
           body: (
-            <div className="pt-4">
-              <span>Please fill all the required fields:</span>
-              {checkInputFields().map((err) => {
-                return (
-                  <div
-                    key={err}
-                    className={`${styleSetting.secondary} flex items-center font-semibold pl-8`}>
-                    <ion-icon
-                      class={`text-${styleSetting.secondary}`}
-                      name="warning-sharp"></ion-icon>
-                    <span>{err}</span>
-                  </div>
-                );
-              })}
+            <div className="pt-4 px-8 text-xl flex">
+              <span>{"something went wrong!! please try later"}</span>
             </div>
           ),
-          option1text: "Complete my reservation",
+          option1text: "Ok",
         },
-        (() => {
-          let err = checkInputFields();
-          if (
-            err.includes("Departure date") ||
-            err.includes("Return date")
-          ) {
-            return "date";
-          }
-        })()
+        "reload",
+        "",
+        "w-1/2"
       );
     }
   };
 
-  const modalRef = useRef();
-
   const swapStations = () => {
-    setfromValue(toValue);
+    dispatch(setOriginCity(destinationCity));
     setoriginStation(destinationStation);
-    settoValue(fromValue);
+    dispatch(setDestinationCity(originCity));
     setdestinationStation(originStation);
   };
 
-  const closeModal = () => {
-    modalRef.current.close();
-  };
-
-  const alertMessage = (message, goto, resetDates, classes) => {
-    modalRef.current.open(
-      <TwoOptionAlert
-        message={message}
-        //close the modal alert
-        closePopup={closeModal}
-        onClickOptions={{
-          //Accept
-          option1Click: () => {
-            //close the current Modal
-            //open passenger selection modal
-            if (goto === "passengers") {
-              document.querySelector(".passengers").click();
-            } else if (goto === "date") {
-              document.querySelector(".date").click();
-            } else if (goto === "reload") {
-              window.location.reload();
-            }
-          },
-          //Decline
-          option2Click: () => {
-            // reset the dates if the user want to choose another date
-            dispatch(setDepartureDate(null));
-            dispatch(setReturnDate(null));
-            dispatch(selectDate(null));
-            document.querySelector(".date").click();
-          },
-        }}
-      />,
-      classes
-    );
-  };
+  //Modal related functions
 
   const openModal = (content) => {
     if (content === "date") {
@@ -275,20 +222,48 @@ export default function SeartchForm() {
     }
   };
 
+  const closeModal = () => {
+    modalRef.current.close();
+  };
+
+  const alertMessage = (message, opt1Action, opt2Action, classes) => {
+    modalRef.current.open(
+      <TwoOptionAlert
+        message={message}
+        //close the modal alert
+        closePopup={closeModal}
+        onClickOptions={{
+          option1Click: () => {
+            //close the current Modal then check for the next action todo
+            if (opt1Action === "passengers") {
+              document.querySelector(".passengers").click();
+            } else if (opt1Action === "date") {
+              document.querySelector(".date").click();
+            } else if (opt1Action === "reload") {
+              window.location.reload();
+            }
+          },
+          option2Click: () => {
+            // reset the dates if the user want to choose another date
+            dispatch(setDepartureDate(null));
+            dispatch(setReturnDate(null));
+            dispatch(selectDate(null));
+            document.querySelector(".date").click();
+          },
+        }}
+      />,
+      classes
+    );
+  };
+
   const showDates = (dateType, date) => {
     const selectedDate = getDatewithNames(date);
     return (
       <>
-        <span className="pt-1 leading-4 text-white text-sm">
-          {dateType}
-        </span>
-        <span className="text-gray-300 text-xs">
-          {selectedDate.dayName}{" "}
-        </span>
+        <span className="pt-1 leading-4 text-white text-sm">{dateType}</span>
+        <span className="text-gray-300 text-xs">{selectedDate.dayName} </span>
         <span className="text-white text-xl">{date.getDate()}</span>
-        <span className="pb-1 text-gray-300 text-xs">
-          {selectedDate.monthName}
-        </span>
+        <span className="pb-1 text-gray-300 text-xs">{selectedDate.monthName}</span>
       </>
     );
   };
@@ -322,12 +297,8 @@ export default function SeartchForm() {
               </span>
               <span className="text-xl text-white">... </span>
               <span className="flex flex-col justify-start items-center h-full">
-                <span className="pt-1 leading-4 text-white text-sm">
-                  Return
-                </span>
-                <ion-icon
-                  class="text-gray-300 text-5xl"
-                  name="calendar-sharp"></ion-icon>
+                <span className="pt-1 leading-4 text-white text-sm">Return</span>
+                <ion-icon class="text-gray-300 text-5xl" name="calendar-sharp"></ion-icon>
               </span>
             </span>
           );
@@ -336,9 +307,7 @@ export default function SeartchForm() {
     } else {
       return (
         <span className="flex justify-center items-center md:pr-2">
-          <ion-icon
-            class="text-gray-300 text-5xl"
-            name="calendar-sharp"></ion-icon>
+          <ion-icon class="text-gray-300 text-5xl" name="calendar-sharp"></ion-icon>
         </span>
       );
     }
@@ -349,31 +318,21 @@ export default function SeartchForm() {
       case FIRST_CLASS:
         return (
           <span className="flex flex-col">
-            <span className="text-white text-base font-medium">
-              FIRST
-            </span>
+            <span className="text-white text-base font-medium">FIRST</span>
             <span className="text-white">Class</span>
           </span>
         );
       case STANDARD_CLASS:
         return (
           <span className="flex flex-col">
-            <span className="text-white text-base font-medium">
-              STANDARD
-            </span>
+            <span className="text-white text-base font-medium">STANDARD</span>
             <span className="text-white">Class</span>
           </span>
         );
       case SINGLE_BED:
-        return (
-          <span className="text-white text-base font-medium">
-            Single Bed
-          </span>
-        );
+        return <span className="text-white text-base font-medium">Single Bed</span>;
       default:
-        return (
-          <span className="text-white text-base font-medium">--</span>
-        );
+        return <span className="text-white text-base font-medium">--</span>;
     }
   };
 
@@ -388,20 +347,14 @@ export default function SeartchForm() {
         return (
           <span className="flex flex-row items-center w-full pb-1 flex-no-wrap">
             <ion-icon name="bus"></ion-icon>
-            <span className="block truncate md:w-5/6 lg:w-full">
-              {" "}
-              {capitalizeFirstLetter(station[1])}
-            </span>
+            <span className="block truncate md:w-5/6 lg:w-full"> {capitalizeFirstLetter(station[1])}</span>
           </span>
         );
       } else {
         return (
           <span className="flex flex-row items-center w-full pb-1 flex-no-wrap">
             <ion-icon name="train"></ion-icon>
-            <span className="block truncate md:w-5/6 lg:w-full">
-              {" "}
-              {capitalizeFirstLetter(station[1])}
-            </span>
+            <span className="block truncate md:w-5/6 lg:w-full"> {capitalizeFirstLetter(station[1])}</span>
           </span>
         );
       }
@@ -423,16 +376,16 @@ export default function SeartchForm() {
         <div className="w-full">
           <input
             onChange={(e) => {
-              setfromValue(e.target.value);
+              dispatch(setOriginCity(e.target.value));
             }}
             onFocus={() => {
-              setfromListdiv("flex");
+              setoriginStationsListDisplay("flex");
               setoriginStation([]);
             }}
             style={{
               paddingLeft: "2px",
             }}
-            value={capitalizeFirstLetter(fromValue)}
+            value={capitalizeFirstLetter(originCity)}
             id="fromId"
             className="lift w-full h-full block truncate md:w-5/6 lg:w-full bg-transparent focus:outline-none text-2xl font-medium"
             type="text"
@@ -451,8 +404,7 @@ export default function SeartchForm() {
               className={`fromLift absolute text-xl font-medium text-${styleSetting.primary_Light}`}>
               From
             </span>
-            <p
-              className={`absolute bottom-0 w-full  text-sm font-medium text-${styleSetting.primary_Light}`}>
+            <p className={`absolute bottom-0 w-full  text-sm font-medium text-${styleSetting.primary_Light}`}>
               {getStationIcon(originStation)}
             </p>
           </label>
@@ -462,21 +414,14 @@ export default function SeartchForm() {
               transition: "all .15s ease",
               left: "-1px",
             }}
-            className={`${fromListdiv} absolute box-content bg-white overflow-hidden overflow-y-auto border border-t-0 border-gray-300 z-20 w-full md:w-153 outline-none max-h-1/4s`}>
+            className={`${originStationsListDisplay} absolute box-content bg-white overflow-hidden overflow-y-auto border border-t-0 border-gray-300 z-20 w-full md:w-153 outline-none max-h-1/4s`}>
             <div className="px-4 w-full">
               <ul className="w-full">
                 {stations
-                  .filter(
-                    (s) =>
-                      s.label.toLowerCase() !== destinationStation[1]
-                  )
-                  .filter((station) =>
-                    station.city
-                      .toLowerCase()
-                      .includes(fromValue.toLowerCase())
-                  )
+                  .filter((s) => s.label.toLowerCase() !== destinationStation[1])
+                  .filter((station) => station.city.toLowerCase().includes(originCity.toLowerCase()))
                   .map((station, i) => {
-                    if (fromValue.length === 0) {
+                    if (originCity.length === 0) {
                       return null;
                     } else {
                       return (
@@ -485,38 +430,21 @@ export default function SeartchForm() {
                           onClick={(e) => {
                             //check if the city have a train station
 
-                            if (
-                              station.label
-                                .toLowerCase()
-                                .includes("supra")
-                            ) {
-                              setoriginStation([
-                                "bus",
-                                station.label.toLowerCase(),
-                              ]);
+                            if (station.label.toLowerCase().includes("supra")) {
+                              setoriginStation(["bus", station.label.toLowerCase()]);
                             } else {
-                              setoriginStation([
-                                "train",
-                                station.label.toLowerCase(),
-                              ]);
+                              setoriginStation(["train", station.label.toLowerCase()]);
                             }
                             dispatch(setoriginID(station._id));
-                            setfromValue(station.city.toLowerCase());
-                            sessionStorage.setItem(
-                              "originCity",
-                              station.city.toLowerCase()
-                            );
-                            setfromListdiv("hidden");
+                            dispatch(setOriginCity(station.city.toLowerCase()));
+                            sessionStorage.setItem("originCity", station.city.toLowerCase());
+                            setoriginStationsListDisplay("hidden");
                           }}
                           key={station.lat + i}>
                           <span>{station.city}</span>
                           <br></br>
-                          <ion-icon
-                            class="pointer-events-none"
-                            name="location-outline"></ion-icon>
-                          <span className="pointer-events-none">
-                            {station.label}
-                          </span>
+                          <ion-icon class="pointer-events-none" name="location-outline"></ion-icon>
+                          <span className="pointer-events-none">{station.label}</span>
                         </li>
                       );
                     }
@@ -552,13 +480,13 @@ export default function SeartchForm() {
         <div className="w-full">
           <input
             onChange={(e) => {
-              settoValue(e.target.value);
+              dispatch(setDestinationCity(e.target.value));
             }}
             onFocus={() => {
-              settoListdiv("flex");
+              setdestinationStationsListDisplay("flex");
               setdestinationStation([]);
             }}
-            value={capitalizeFirstLetter(toValue)}
+            value={capitalizeFirstLetter(destinationCity)}
             id="toId"
             style={{
               paddingLeft: "2px",
@@ -580,8 +508,7 @@ export default function SeartchForm() {
               className={`toLift absolute text-xl font-medium text-${styleSetting.primary_Light} `}>
               To
             </span>
-            <p
-              className={`absolute bottom-0 w-full text-sm font-medium text-${styleSetting.primary_Light}`}>
+            <p className={`absolute bottom-0 w-full text-sm font-medium text-${styleSetting.primary_Light}`}>
               {getStationIcon(destinationStation)}
             </p>
           </label>
@@ -591,20 +518,14 @@ export default function SeartchForm() {
               transition: "all .15s ease",
               left: "-1px",
             }}
-            className={`${toListdiv} absolute box-content bg-white overflow-hidden border border-t-0 border-gray-300 z-10 w-full md:w-153 max-h-1/4s`}>
+            className={`${destinationStationsListDisplay} absolute box-content bg-white overflow-hidden border border-t-0 border-gray-300 z-10 w-full md:w-153 max-h-1/4s`}>
             <div className="px-4 w-full overflow-y-auto">
               <ul className="w-full">
                 {stations
-                  .filter(
-                    (s) => s.label.toLowerCase() !== originStation[1]
-                  )
-                  .filter((station) =>
-                    station.city
-                      .toLowerCase()
-                      .includes(toValue.toLowerCase())
-                  )
+                  .filter((s) => s.label.toLowerCase() !== originStation[1])
+                  .filter((station) => station.city.toLowerCase().includes(destinationCity.toLowerCase()))
                   .map((station, i) => {
-                    if (toValue.length === 0) {
+                    if (destinationCity.length === 0) {
                       return null;
                     } else {
                       return (
@@ -612,38 +533,21 @@ export default function SeartchForm() {
                           className="cursor-pointer hover:bg-blue-turkish z-20"
                           onClick={() => {
                             //check if the city have a train station
-                            if (
-                              station.label
-                                .toLowerCase()
-                                .includes("supra")
-                            ) {
-                              setdestinationStation([
-                                "bus",
-                                station.label.toLowerCase(),
-                              ]);
+                            if (station.label.toLowerCase().includes("supra")) {
+                              setdestinationStation(["bus", station.label.toLowerCase()]);
                             } else {
-                              setdestinationStation([
-                                "train",
-                                station.label.toLowerCase(),
-                              ]);
+                              setdestinationStation(["train", station.label.toLowerCase()]);
                             }
-                            settoValue(station.city.toLowerCase());
+                            dispatch(setDestinationCity(station.city.toLowerCase()));
                             dispatch(setdestinationID(station._id));
-                            sessionStorage.setItem(
-                              "destinationCity",
-                              station.city.toLowerCase()
-                            );
-                            settoListdiv("hidden");
+                            sessionStorage.setItem("destinationCity", station.city.toLowerCase());
+                            setdestinationStationsListDisplay("hidden");
                           }}
                           key={station.lat + i}>
                           <span>{station.city}</span>
                           <br></br>
-                          <ion-icon
-                            class="pointer-events-none"
-                            name="location-outline"></ion-icon>
-                          <span className="pointer-events-none">
-                            {station.label}
-                          </span>
+                          <ion-icon class="pointer-events-none" name="location-outline"></ion-icon>
+                          <span className="pointer-events-none">{station.label}</span>
                         </li>
                       );
                     }
@@ -661,10 +565,7 @@ export default function SeartchForm() {
             openModal("date");
           }}
           className={`date bg-${styleSetting.primary} z-0 min-w-32 w-1/2 h-22t flex justify-center items-center cursor-pointer mr-2 `}>
-          <span
-            className={`hidden text-base font-normal md:inline ${
-              departureDate ? "" : "px-2"
-            } `}>
+          <span className={`hidden text-base font-normal md:inline ${departureDate ? "" : "px-2"} `}>
             {departureDate ? "" : " Dates"}
           </span>
           {updateCalendarBtn()}
@@ -683,9 +584,7 @@ export default function SeartchForm() {
               {[...Array(totalPassengers)].map((passenger, i) => {
                 if (i === 3) {
                   return (
-                    <span
-                      key={i}
-                      className="font-black ml-px md:text-sm text-gray-400">
+                    <span key={i} className="font-black ml-px md:text-sm text-gray-400">
                       +
                     </span>
                   );
@@ -693,9 +592,7 @@ export default function SeartchForm() {
                   return (
                     <ion-icon
                       key={i}
-                      class={`${
-                        i === 2 ? "text-gray-400 " : "text-gray-300"
-                      } text-2xl md:text-1xl -m-2`}
+                      class={`${i === 2 ? "text-gray-400 " : "text-gray-300"} text-2xl md:text-1xl -m-2`}
                       name="man-sharp"></ion-icon>
                   );
                 } else {

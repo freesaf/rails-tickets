@@ -11,6 +11,7 @@ import {
   SELECT_DESTINATION_ID,
   SELECT_ORIGIN_ID,
   RESET_STATE,
+  UPDATE_PASSENGERS,
 } from "../actions/types";
 
 const INITIAL_STATE = {
@@ -35,6 +36,8 @@ export default (state = INITIAL_STATE, action) => {
       return { ...state, adulte: action.payload };
     case SELECT_CHILD:
       return { ...state, kids: action.payload };
+    case UPDATE_PASSENGERS:
+      return { ...state, kids: action.payload[0], adulte: action.payload[1] };
     case SELECT_TICKET_TYPE:
       return { ...state, roundtrip: action.payload };
     case SELECT_CLASS:

@@ -3,12 +3,7 @@ import PriceComponent from "./PriceComponent";
 import Tooltip from "../Tooltip";
 import { useSelector } from "react-redux";
 
-export default function TripPrices({
-  tripPath,
-  currency,
-  selectTrain,
-  i,
-}) {
+export default function TripPrices({ tripPath, currency, selectTrain, i }) {
   const prices = tripPath.tripPrices;
   const state = useSelector((state) => state);
   const styleSetting = state.styleSetting;
@@ -36,9 +31,7 @@ export default function TripPrices({
             <div className="details-part md:w-full md:min-h-81">
               <Tooltip
                 classs={"md:hidden mx-auto"}
-                content={
-                  "click on the desired price to select your train"
-                }
+                content={"click on the desired price to select your train"}
               />
               <div className="text-orange-400 text-xxs4 font-medium md:border-l-4 border-solid border-orange-400 md:py-4 md:px-2 md:bg-gray-300 md:h-16">
                 Non Flex{" "}
@@ -62,7 +55,8 @@ export default function TripPrices({
             </div>
             <div
               onClick={() => {
-                selectTrain(tripPath, 0);
+                const price = prices.filter((price) => price._id === 3)[0].data;
+                selectTrain(tripPath, price);
               }}
               className={`hidden md:block px-2 py-3 text-white bg-red-800 text-center ${
                 prices.filter((price) => price._id === 3)[0].data
@@ -74,7 +68,8 @@ export default function TripPrices({
             </div>
             <div
               onClick={() => {
-                selectTrain(tripPath, prices[2].data);
+                const price = prices.filter((price) => price._id === 3)[0].data;
+                selectTrain(tripPath, price);
               }}
               className={`text-orange-400 border-2 border-solid rounded-full border-orange-400 pt-1 px-2 mr-2 font-bold whitespace-no-wrap absolute top-41 md:top-1 right-1 md:mt-3 ${
                 prices.filter((price) => price._id === 3)[0].data
@@ -83,10 +78,7 @@ export default function TripPrices({
               }`}>
               {prices.filter((price) => price._id === 3)[0].data ? (
                 <PriceComponent
-                  price={
-                    prices.filter((price) => price._id === 3)[0].data
-                      .price
-                  }
+                  price={prices.filter((price) => price._id === 3)[0].data.price}
                   currency={currency}
                 />
               ) : (
@@ -127,22 +119,21 @@ export default function TripPrices({
             </div>
             <div
               onClick={() => {
-                selectTrain(tripPath, 1);
+                const price = prices.filter((price) => price._id === 2)[0].data;
+                selectTrain(tripPath, price);
               }}
               className={`hidden md:block px-2 py-3 text-white bg-red-800 text-center hover:bg-${styleSetting.secondary} cursor-pointer`}>
               Select this Train
             </div>
             <div
               onClick={() => {
-                selectTrain(tripPath, prices[1].data);
+                const price = prices.filter((price) => price._id === 2)[0].data;
+                selectTrain(tripPath, price);
               }}
               className="text-teal-400 border-2 border-solid rounded-full border-teal-400 pt-1 px-2 mr-2 pointer-events-auto cursor-pointer md:cursor-default md:pointer-events-none font-bold whitespace-no-wrap absolute top-1 right-1">
               {prices[1].data ? (
                 <PriceComponent
-                  price={
-                    prices.filter((price) => price._id === 2)[0].data
-                      .price
-                  }
+                  price={prices.filter((price) => price._id === 2)[0].data.price}
                   currency={currency}
                 />
               ) : (
@@ -183,22 +174,21 @@ export default function TripPrices({
             </div>
             <div
               onClick={() => {
-                selectTrain(tripPath, prices[2].data);
+                const price = prices.filter((price) => price._id === 1)[0].data;
+                selectTrain(tripPath, price);
               }}
               className={`hidden md:block px-2 py-3 text-white bg-red-800 text-center hover:bg-${styleSetting.secondary} cursor-pointer`}>
               Select this Train
             </div>
             <div
               onClick={() => {
-                selectTrain(tripPath, 2);
+                const price = prices.filter((price) => price._id === 1)[0].data;
+                selectTrain(tripPath, price);
               }}
               className="text-indigo-400 border-2 border-solid rounded-full border-indigo-400 pt-1 px-2 mr-2 pointer-events-auto cursor-pointer md:cursor-default md:pointer-events-none font-bold whitespace-no-wrap absolute top-1 right-1">
               {prices[2].data ? (
                 <PriceComponent
-                  price={
-                    prices.filter((price) => price._id === 1)[0].data
-                      .price
-                  }
+                  price={prices.filter((price) => price._id === 1)[0].data.price}
                   currency={currency}
                 />
               ) : (

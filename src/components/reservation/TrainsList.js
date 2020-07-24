@@ -65,11 +65,9 @@ export default function TrainList({ directionPath, selectTrain }) {
     }
 
     return (
-      <span
-        className={`text-xxs text-${styleSetting.primary_Light} flex flex-col sm:leading-4`}>
+      <span className={`text-xxs text-${styleSetting.primary_Light} flex flex-col sm:leading-4`}>
         <span className="sm:text-xxs2">
-          {passengers.length}{" "}
-          {passengers.length >= 2 ? "Passengers" : "Passenger"}{" "}
+          {passengers.length} {passengers.length >= 2 ? "Passengers" : "Passenger"}{" "}
         </span>
         <span> {passengerText} </span>
       </span>
@@ -100,9 +98,7 @@ export default function TrainList({ directionPath, selectTrain }) {
                       transition: "all 0.15s ease",
                     }}
                     class={`inline-block w-5 h-5 transform ${
-                      tripDetailsDisplay === i
-                        ? "rotate-180"
-                        : "rotate-0"
+                      tripDetailsDisplay === i ? "rotate-180" : "rotate-0"
                     } visible`}
                     name="chevron-down-outline"></ion-icon>
                 </span>
@@ -138,10 +134,7 @@ export default function TrainList({ directionPath, selectTrain }) {
               <div className="flex flex-col pl-2">
                 {getPassengers(train.travelersList)}
                 <div className="font-semibold whitespace-no-wrap text-xxs4 md:text-base">
-                  <PriceComponent
-                    currency={currency}
-                    price={train.tripPrices[2].data.price}
-                  />
+                  <PriceComponent currency={currency} price={train.tripPrices[2].data.price} />
                 </div>
               </div>
               <div className="sm:pt-5">
@@ -149,23 +142,15 @@ export default function TrainList({ directionPath, selectTrain }) {
                   style={{
                     transition: "all 0.15s ease",
                   }}
-                  class={`inline-block w-5 h-5 md:text-${
-                    styleSetting.primary_Light
-                  } transform ${
-                    priceDetailsDisplay === i
-                      ? "rotate-180 "
-                      : "rotate-0"
+                  class={`inline-block w-5 h-5 md:text-${styleSetting.primary_Light} transform ${
+                    priceDetailsDisplay === i ? "rotate-180 " : "rotate-0"
                   } visible`}
                   name="chevron-down-outline"></ion-icon>
               </div>
             </div>
           </div>
           <div
-            className={`${
-              tripDetailsDisplay === i
-                ? "w-full flex p-4 pt-0 lg:max-w-screen-lg"
-                : "hidden"
-            }`}>
+            className={`${tripDetailsDisplay === i ? "w-full flex p-4 pt-0 lg:max-w-screen-lg" : "hidden"}`}>
             <TripDetails
               showPrices={() => {
                 closeModal();
@@ -175,16 +160,10 @@ export default function TrainList({ directionPath, selectTrain }) {
               indx={i}
             />
           </div>
-          <div
-            className={
-              priceDetailsDisplay === i
-                ? "w-full flex p-4 pt-0 lg:max-w-screen-lg "
-                : "hidden"
-            }>
+          <div className={priceDetailsDisplay === i ? "w-full flex p-4 pt-0 lg:max-w-screen-lg " : "hidden"}>
             <TripPrices
               tripPath={train}
               currency={currency}
-              i={i}
               selectTrain={(selectedTrain, priceIndx) => {
                 selectTrain(selectedTrain, priceIndx);
               }}
